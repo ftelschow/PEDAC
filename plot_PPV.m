@@ -35,7 +35,7 @@ xlim([years(1), years(end)])
 ylim([0, 1])
 set(gca, 'fontsize', 14);
 
-set(gcf,'papersize',[12 12])
+set(gcf,'papersize',[8 6])
 fig = gcf;
 fig.PaperPositionMode = 'auto';
 fig_pos = fig.PaperPosition;

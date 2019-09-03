@@ -28,12 +28,13 @@ glue = 'direct';
 
 %%%% Constants
 % convert constant from gton to ppm: 1 ppm CO2 = 2.31 gton CO2
-gton2ppmCO2 = 1/2.31;
-C2CO2       = 1/44*12;   % Is that correct?
+gtonC_2_ppmC = 1/2.12; % Quere et al 2017
+gtonCO2_2_ppmCO2 = 1/2.31;
+C2CO2       = 44.01/12.011;   % Is that correct?
 
 %%%% Plot options
-set(groot, 'defaultAxesTickLabelInterpreter','latex');
-set(groot, 'defaultLegendInterpreter','latex');
+% figure counter
+figure_counter = 1;
 
 % standard color schemes 'https://personal.sron.nl/~pault/'
 BrightCol  = [[68 119 170];...    % blue
@@ -62,7 +63,8 @@ colMat = Vibrant([1 3 4 5],:);
 %% %%%% Load available real emission data
 % Load the real observed CO2 in the atmosphere
 load(strcat(path_data,'dataObservedCO2.mat')); % loads in dtdelpCO2a_obs,
-                                               % dpCO2a_obs, CO2a_obs
+                                               % dpCO2a_obs, CO2a_obs in
+                                               % ppm CO2
 
 % Plot the contained curves
 % figure; plot(dtdelpCO2a_obs(:,1), dtdelpCO2a_obs(:,2))
@@ -87,27 +89,94 @@ Intpol_method = 'pchip'; %'linear'% 'linear' was chosen by Julia in her man-file
                          % for early years
 
 % Load the emission data files to load and convert to ppm
-FF_data = csvread(strcat(path_data,'dataFF_Boden_2016.csv'));    % in gigatons/year
-LU_data = csvread(strcat(path_data,'dataLU_Houghton_2016.csv')); % in gigatons/year
+FF_data = csvread(strcat(path_data,'dataFF_Boden_2016.csv'));    % in 10^12C /year (gtC/year) 
+LU_data = csvread(strcat(path_data,'dataLU_Houghton_2016.csv')); % in 10^12C /year (gtC/year)
 
 % Start emission data from observation data
 FF_data = FF_data(FF_data(:,1)>=startYear_obs,:);
 
-LU_data(1,1) = 1765;
+LU_data(1,1) = startYear_obs;
 
-% convert to ppm
-FF_data(:,2) = FF_data(:,2)*gton2ppmCO2;
-LU_data(:,2) = LU_data(:,2)*gton2ppmCO2;
+% convert to ppm CO2
+FF_data(:,2) = FF_data(:,2)*gtonC_2_ppmC * C2CO2;
+LU_data(:,2) = LU_data(:,2)*gtonC_2_ppmC * C2CO2;
 
-% Compute total emissions interpolated until 2016
-PastTotalCO2emission = getSourceData_fabian( 1, FF_data, Intpol_method);
-ff  = PastTotalCO2emission; % Fosil fuel part of emissions
-
+%%%% Compute total emissions interpolated until 2016
+% Fosil fuel part of emissions annually
+ff = getSourceData_fabian( 1, FF_data, Intpol_method);
 LU = getSourceData_fabian( 1, LU_data, Intpol_method);
-PastTotalCO2emission(:,2) = PastTotalCO2emission(:,2) + LU(:,2);
-PastTotalCO2emission_int  = getSourceData_fabian( 12, PastTotalCO2emission,...
-                                                  Intpol_method);
+
+ff_int =  getSourceData_fabian( 12, ff, Intpol_method);
+LU_int =  getSourceData_fabian( 12, LU, Intpol_method);
+
+PastTotalCO2emission = LU;
+PastTotalCO2emission(:,2) = LU(:,2) + ff(:,2);
+
+PastTotalCO2emission_int = LU_int;
+PastTotalCO2emission_int(:,2) = LU_int(:,2) + ff_int(:,2);
 clear FF_data LU_data missing_years_LU;
+
+
+figure(figure_counter), clf, hold on
+WidthFig  = 600;
+HeightFig = 400;
+set(gcf, 'Position', [ 300 300 WidthFig HeightFig]);
+set(gcf,'PaperPosition', [ 300 300 WidthFig HeightFig])
+set(groot, 'defaultAxesTickLabelInterpreter','latex');
+set(groot, 'defaultLegendInterpreter','latex');
+
+line( PastTotalCO2emission_int(:, 1 ), PastTotalCO2emission_int(:,2), 'color',...
+      BrightCol(1,:), 'LineWidth', 1.5)
+line( LU_int(:, 1 ), LU_int(:,2), 'color', BrightCol(3,:), 'LineWidth', 1.5)
+line( ff_int(:, 1 ), ff_int(:,2), 'color', BrightCol(5,:), 'LineWidth', 1.5)
+  
+xlim([1763 2017])
+h = title('Past CO2 emissions'); set(h, 'Interpreter', 'latex');
+h = xlabel('year'); set(h, 'Interpreter', 'latex');
+h = ylabel('CO2 [ppm/year]'); set(h, 'Interpreter', 'latex');
+h = legend('Past total CO2',...
+       'CO2 from land use',...
+       'CO2 from fossil fuel','location','northwest'); set(h, 'Interpreter', 'latex');
+set(gca, 'fontsize', 14);
+hold off
+
+set(gcf,'papersize',[12 12])
+fig = gcf;
+fig.PaperPositionMode = 'auto';
+fig_pos = fig.PaperPosition;
+fig.PaperSize = [fig_pos(3) fig_pos(4)];
+print(strcat(path_pics,strcat('PastEmissionsPPM_',Intpol_method,'.png')), '-dpng')
+
+figure_counter = figure_counter +1;
+figure(figure_counter), clf, hold on
+WidthFig  = 600;
+HeightFig = 400;
+set(gcf, 'Position', [ 300 300 WidthFig HeightFig]);
+set(gcf,'PaperPosition', [ 300 300 WidthFig HeightFig])
+set(groot, 'defaultAxesTickLabelInterpreter','latex');
+set(groot, 'defaultLegendInterpreter','latex');
+
+line( PastTotalCO2emission_int(:, 1 ), PastTotalCO2emission_int(:,2)/gtonC_2_ppmC, 'color',...
+      BrightCol(1,:), 'LineWidth', 1.5)
+line( LU_int(:, 1 ), LU_int(:,2)/gtonC_2_ppmC, 'color', BrightCol(3,:), 'LineWidth', 1.5)
+line( ff_int(:, 1 ), ff_int(:,2)/gtonC_2_ppmC, 'color', BrightCol(5,:), 'LineWidth', 1.5)
+  
+xlim([1763 2017])
+h = title('Past CO2 emissions'); set(h, 'Interpreter', 'latex');
+h = xlabel('year'); set(h, 'Interpreter', 'latex');
+h = ylabel('CO2 [Gt CO2/year]'); set(h, 'Interpreter', 'latex');
+h = legend('Past total CO2',...
+       'CO2 from land use',...
+       'CO2 from fossil fuel','location','northwest'); set(h, 'Interpreter', 'latex');
+set(gca, 'fontsize', 14);
+hold off
+
+set(gcf,'papersize',[12 12])
+fig = gcf;
+fig.PaperPositionMode = 'auto';
+fig_pos = fig.PaperPosition;
+fig.PaperSize = [fig_pos(3) fig_pos(4)];
+print(strcat(path_pics,strcat('PastEmissionsGtCO2_',Intpol_method,'.png')), '-dpng')
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% %%%% Read the AR5 2 degree scenarios
@@ -131,7 +200,7 @@ for scenarioNum = 2:size(AR52deg_data,2)
     data_AR5          = [ AR52deg_data(:,1) AR52deg_data(:, scenarioNum) ] ;
     data_AR5          = data_AR5(Index_NoNmissing, :);
     % convert to ppm in C
-    data_AR5(:,2)     = data_AR5(:,2) / 10^3 * gton2ppmCO2 * C2CO2;
+    data_AR5(:,2)     = data_AR5(:,2) / 10^3 * gtonC_2_ppmC;
     cut_year          = min(data_AR5(:,1));
     Ie                = find(PastTotalCO2emission(:,1)==cut_year);
     Ia                = find(PastTotalCO2emission(:,1)==1765);
@@ -153,7 +222,8 @@ end
 clear Ia data_AR5 data_int data cut_year Index_NoNmissing AR52deg_data ...
       scenarioNum Index_NoNmissing Ie
 
-figure(1), clf, hold on
+figure_counter = figure_counter +1;
+figure(figure_counter), clf, hold on
 WidthFig  = 600;
 HeightFig = 400;
 set(gcf, 'Position', [ 300 300 WidthFig HeightFig]);
@@ -208,7 +278,7 @@ for scenarioNum = 2:size(AR5base_data,2)
     data_AR5          = [ AR5base_data(:,1) AR5base_data(:, scenarioNum) ] ;
     data_AR5          = data_AR5(Index_NoNmissing, :);
     % convert to ppm in C
-    data_AR5(:,2)     = data_AR5(:,2) / 10^3 * gton2ppmCO2 * C2CO2;
+    data_AR5(:,2)     = data_AR5(:,2) / 10^3 * gtonC_2_ppmC;
     cut_year          = min(data_AR5(:,1));
     Ie                = find(PastTotalCO2emission(:,1)==cut_year);
     Ia                = find(PastTotalCO2emission(:,1)==1765);
@@ -230,7 +300,8 @@ end
 clear Ia data_AR5 data_int data cut_year Index_NoNmissing AR52deg_data ...
       scenarioNum Index_NoNmissing Ie
 
-figure(2), clf, hold on
+figure_counter = figure_counter +1;
+figure(figure_counter), clf, hold on
 WidthFig  = 600;
 HeightFig = 400;
 set(gcf, 'Position', [ 300 300 WidthFig HeightFig]);
@@ -263,7 +334,8 @@ print(strcat(path_pics,strcat('Emissions_AR5base_',glue,'.png')), '-dpng')
 hold off
 
 
-figure(3), clf, hold on
+figure_counter = figure_counter +1;
+figure(figure_counter), clf, hold on
 WidthFig  = 600;
 HeightFig = 400;
 set(gcf, 'Position', [ 300 300 WidthFig HeightFig]);
@@ -310,16 +382,24 @@ deg_Base_correspondence = [1,2,5,8,9,10,11,1,2,3,5,6,7,8,9,10,11,12,... % AME Re
 %% Fit optimal parameters for Joos Model by least squares
 % Define the loss function depending on the real observed atmospheric CO2
 % find data until 2005
-minLoss = @(x) LSE_Params( x, PastTotalCO2emission_int, CO2a_obs, 1765, 2016 );
+PastTotalCemission_int = PastTotalCO2emission_int;
+PastTotalCemission_int(:,2) = PastTotalCO2emission_int(:,2) ./ C2CO2;
+
+minLoss = @(x) LSE_Params( x, PastTotalCemission_int, CO2a_obs, 1765, 2016 );
 
 % value of minLoss for starting parameters
-minLoss([0.287    283])
+minLoss([0.87 280])
 
 % optimize paramter
-%xopt = fminsearch(minLoss, [0.287    283]);
+%[xopt,fval, exitflag, output] = fminsearch(minLoss, [0.87    278]);
 
-xopt1 = [0.1586  284.1789]  % loss minimized 1765-2016
-xopt2 = [0.1805  285.0679]  % loss minimized 1958-2016
+xopt1 = [0.2333  284.1919]  % loss minimized 1765-2016
+xopt2 = [0.2585  285.1705]  % loss minimized 1958-2016
+%xopt = [0.14 281];         % manual minLoss=0.9392 on 1958-2016
+%xopt = [0.19 275];         % manual minLoss=0.9392 on 1958-2016
+
+%xopt1 = [2.7852  285.6958]  % loss minimized 1765-2016
+%xopt2 = [2.7852  285.6960]  % loss minimized 1958-2016
 %xopt = [0.14 281];         % manual minLoss=0.9392 on 1958-2016
 %xopt = [0.19 275];         % manual minLoss=0.9392 on 1958-2016
 
@@ -329,14 +409,15 @@ xopt2 = [0.1805  285.0679]  % loss minimized 1958-2016
 minLoss(xopt1)
 minLoss(xopt2)
 % Check that the optimal fit makes sense, up to 2004
-[CO2a, ~, fas, ffer, Aoc, dtdelpCO2a] = JoosModelFix( PastTotalCO2emission_int, xopt1 );
+[CO2a, ~, fas, ffer, Aoc, dtdelpCO2a] = JoosModelFix( PastTotalCemission_int, xopt1 );
 % Check that the optimal fit makes sense, up to 2016
-CO2a2 = JoosModelFix( PastTotalCO2emission_int, xopt2 );
+CO2a2 = JoosModelFix( PastTotalCemission_int, xopt2 );
 
 clear minLoss
 
 % Plot fit with optimised parameters
-figure(4),clf, hold on
+figure_counter = figure_counter +1;
+figure(figure_counter),clf, hold on
 WidthFig  = 600;
 HeightFig = 400;
 set(gcf, 'Position', [ 300 300 WidthFig HeightFig]);
@@ -350,9 +431,9 @@ line(CO2a_obs(:,1),CO2a_obs(:,2), 'Color', colMat(1,:), 'LineWidth',2);
 
 ylim([260 450])
 
-legend('Calculated atmospheric CO2  optimised from 1765',...
+h = legend('Calculated atmospheric CO2  optimised from 1765',...
        'Calculated atmospheric CO2 optimised from 1958',...
-       'Observed atmospheric CO2','location','northwest')
+       'Observed atmospheric CO2','location','northwest'); set(h, 'Interpreter', 'latex');
 h = ylabel('Atmospheric ${\rm CO_2}$ [ppm]'); set(h, 'Interpreter', 'latex');
 h = xlabel('year'); set(h, 'Interpreter', 'latex');
 h = title('Modeled vs. Observed CO2'); set(h, 'Interpreter', 'latex');
@@ -368,7 +449,8 @@ fig.PaperSize = [fig_pos(3) fig_pos(4)];
 print(strcat(path_pics,"AtmosphericCO2_fit_",Intpol_method,".png"), '-dpng')
 hold off
 
-figure(5), clf, hold on,
+figure_counter = figure_counter +1;
+figure(figure_counter), clf, hold on,
 WidthFig  = 600;
 HeightFig = 400;
 set(gcf, 'Position', [ 300 300 WidthFig HeightFig]);
@@ -376,7 +458,11 @@ set(gcf,'PaperPosition', [ 300 300 WidthFig HeightFig])
 set(groot, 'defaultAxesTickLabelInterpreter','latex');
 set(groot, 'defaultLegendInterpreter','latex');
 
-plot(ff(:,1),ff(:,2),fas(:,1),Aoc*fas(:,2),ffer(:,1),ffer(:,2),LU(:,1),LU(:,2),dtdelpCO2a(:,1),dtdelpCO2a(:,2), 'LineWidth', 2);
+plot( ff(:,1),ff(:,2),...
+      fas(:,1),Aoc*fas(:,2),...
+      ffer(:,1),ffer(:,2),...
+      LU(:,1),LU(:,2),...
+      dtdelpCO2a(:,1),dtdelpCO2a(:,2), 'LineWidth', 2);
 h = legend('Fossil fuel','Air-sea flux','Land sink','Land use','Change in atmospheric CO2','location','northwest');
 set(h, 'Interpreter', 'latex');
 h = ylabel('ppm/yr');  set(h, 'Interpreter', 'latex');
@@ -408,7 +494,8 @@ end
 % Clear workspace
 clear Ia data_AR5 data_int data cut_year Index_NoNmissing AR5base_data
 
-figure(6), clf, hold on
+figure_counter = figure_counter +1;
+figure(figure_counter), clf, hold on
 WidthFig  = 600;
 HeightFig = 400;
 set(gcf, 'Position', [ 300 300 WidthFig HeightFig]);
@@ -451,7 +538,8 @@ end
 % Clear workspace
 clear Ia data_AR5 data_int data cut_year Index_NoNmissing AR5base_data
 
-figure(7), clf, hold on
+figure_counter = figure_counter +1;
+figure(figure_counter), clf, hold on
 WidthFig  = 600;
 HeightFig = 400;
 set(gcf, 'Position', [ 300 300 WidthFig HeightFig]);

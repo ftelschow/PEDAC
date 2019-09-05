@@ -29,9 +29,11 @@ for t = 1:T
     % true_detect(t) = sum(sum(process_shift(1:t,:) < thresholds(1:t)',1)>0) / N;   
 end
 
-false_detect2 = CumDetectTimeProb( process -thresholds', 0 )';
-true_detect2  = CumDetectTimeProb( process + drift(2,:)'-drift(1,:)'-thresholds',...
-                                       0);
+%false_detect2 = CumDetectTimeProb( process -thresholds', 0 )';
+%true_detect2  = CumDetectTimeProb( process + drift(2,:)'-drift(1,:)'-thresholds',...
+%                                       0);
+true_detect2  = zeros([1 length(thresholds)]);
+false_detect2 = zeros([1 length(thresholds)]);
 %                                    
 % for k = 1:length(thresholds)
 %     tmp = CumDetectTimeProb( process, thresholds(k) );
@@ -41,7 +43,7 @@ true_detect2  = CumDetectTimeProb( process + drift(2,:)'-drift(1,:)'-thresholds'
 % end
 
 probs  = [false_detect; true_detect]';
-probs2 = [false_detect2; true_detect2']';
+probs2 = [false_detect2; true_detect2]';
 
 [~,dyear] = min(abs(true_detect-(1-q)));
 

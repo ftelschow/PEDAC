@@ -16,20 +16,19 @@ clear all
 close all
 
 % set correct working directory
-path      = '/home/drtea/Research/Projects/2018_CO2/joosModel';
+path      = '/home/drtea/Research/Projects/2018_CO2/PEDAC';
 path_pics = '/home/drtea/Research/Projects/2018_CO2/pics/';
-path_data = '/home/drtea/Research/Projects/2018_CO2/joosModel/data/';
+path_data = '/home/drtea/Research/Projects/2018_CO2/PEDAC/data/';
 cd(path)
 clear path
 
-% glue continuously
+% glue option
 %glue = 'cont';
 glue = 'direct';
 
 %%%% Constants
 % convert constant from gton to ppm: 1 ppm CO2 = 2.31 gton CO2
 gtonC_2_ppmC = 1/2.12; % Quere et al 2017
-gtonCO2_2_ppmCO2 = 1/2.31;
 C2CO2       = 44.01/12.011;   % Is that correct?
 
 %%%% Plot options
@@ -60,30 +59,106 @@ Vibrant    = [[0 119 187];... % blue
 colMat = Vibrant([1 3 4 5],:);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% %%%% Load available real emission data
+%% %%%% Load available real atmospheric CO2 data and plot it
 % Load the real observed CO2 in the atmosphere
 load(strcat(path_data,'dataObservedCO2.mat')); % loads in dtdelpCO2a_obs,
                                                % dpCO2a_obs, CO2a_obs in
                                                % ppm CO2
-
-% Plot the contained curves
-% figure; plot(dtdelpCO2a_obs(:,1), dtdelpCO2a_obs(:,2))
-% xlim([min(dtdelpCO2a_obs(:,1)), max(dtdelpCO2a_obs(:,1))])
-% 
-% figure; plot(dpCO2a_obs(:,1), dpCO2a_obs(:,2))
-% xlim([min(dpCO2a_obs(:,1)), max(dpCO2a_obs(:,1))])
-% 
-% figure(1);
-% plot(CO2a_obs(:,1), CO2a_obs(:,2))
-% xlim([min(CO2a_obs(:,1)), max(CO2a_obs(:,1))])
-
 % save minimal year in the observation data
 startYear_obs = floor(min(CO2a_obs(:,1)));
+
+%%%% Plot the contained curves from this data repository
+figure(1), clf, hold on,
+% Define size and location of the figure [xPos yPos WidthFig HeightFig]
+set(gcf, 'Position', [ 300 300 600 400]);
+set(gcf,'PaperPosition', [ 300 300 600 400])
+% set interpreter to latex
+set(groot, 'defaultAxesTickLabelInterpreter','latex');
+set(groot, 'defaultLegendInterpreter','latex');
+
+%plot the data
+plot(dtdelpCO2a_obs(dtdelpCO2a_obs>=startYear_obs,1), dtdelpCO2a_obs(dtdelpCO2a_obs>=startYear_obs,2))
+% configure axis and legend
+xlim([min(dtdelpCO2a_obs(dtdelpCO2a_obs>=startYear_obs,1)), ...
+    max(dtdelpCO2a_obs(dtdelpCO2a_obs>=startYear_obs,1))])
+grid
+h = xlabel("years");  set(h, 'Interpreter', 'latex');
+h = ylabel("dtdelpCO2a_obs");  set(h, 'Interpreter', 'latex');
+h = legend('dtdelpCO2a_obs','location','northwest');
+set(h, 'Interpreter', 'latex');
+set(gca, 'fontsize', 14);
+
+% print figure
+set(gcf,'papersize',[12 12])
+fig = gcf;
+fig.PaperPositionMode = 'auto';
+fig_pos = fig.PaperPosition;
+fig.PaperSize = [fig_pos(3) fig_pos(4)];
+print('../pics/Observed_AtmosphericGrowth.png', '-dpng')
+hold off
+
+figure(2), clf, hold on,
+% Define size and location of the figure [xPos yPos WidthFig HeightFig]
+set(gcf, 'Position', [ 300 300 600 400]);
+set(gcf,'PaperPosition', [ 300 300 600 400])
+% set interpreter to latex
+set(groot, 'defaultAxesTickLabelInterpreter','latex');
+set(groot, 'defaultLegendInterpreter','latex');
+
+% Plot the data
+plot(dpCO2a_obs(:,1), dpCO2a_obs(:,2))
+% configure axis and legend
+xlim([min(dpCO2a_obs(:,1)), max(dpCO2a_obs(:,1))])
+grid
+h = xlabel("years");  set(h, 'Interpreter', 'latex');
+h = ylabel("dpCO2a_obs");  set(h, 'Interpreter', 'latex');
+h = legend('dpCO2a_obs','location','northwest');
+set(h, 'Interpreter', 'latex');
+set(gca, 'fontsize', 14);
+
+% print figure
+set(gcf,'papersize',[12 12])
+fig = gcf;
+fig.PaperPositionMode = 'auto';
+fig_pos = fig.PaperPosition;
+fig.PaperSize = [fig_pos(3) fig_pos(4)];
+print('../pics/Observed_Unknown.png', '-dpng')
+hold off
+
+figure(3), clf, hold on,
+% Define size and location of the figure [xPos yPos WidthFig HeightFig]
+set(gcf, 'Position', [ 300 300 600 400]);
+set(gcf,'PaperPosition', [ 300 300 600 400])
+% set interpreter to latex
+set(groot, 'defaultAxesTickLabelInterpreter','latex');
+set(groot, 'defaultLegendInterpreter','latex');
+
+% Plot the data
+plot(CO2a_obs(:,1), CO2a_obs(:,2))
+% configure axis and legend
+xlim([min(CO2a_obs(:,1)), max(CO2a_obs(:,1))])
+ylim([min(CO2a_obs(:,2))-1, max(CO2a_obs(:,2))]+1)
+grid
+h = xlabel("years");  set(h, 'Interpreter', 'latex');
+h = ylabel("atmospheric CO2 [ppm]");  set(h, 'Interpreter', 'latex');
+h = legend('atmospheric CO2','location','northwest');
+set(h, 'Interpreter', 'latex');
+set(gca, 'fontsize', 14);
+
+% print figure
+set(gcf,'papersize',[12 12])
+fig = gcf;
+fig.PaperPositionMode = 'auto';
+fig_pos = fig.PaperPosition;
+fig.PaperSize = [fig_pos(3) fig_pos(4)];
+print('../pics/Observed_AtmosphericCO2.png', '-dpng')
+hold off
 
 clear dtdelpCO2a_obs dpCO2a_obs
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% %%%% Load past CO2 emissions data and
+%% %%%% Load past CO2 emissions for Land use and fossil fuel and interpolate+ add to yield total emissions
+close all
 Intpol_method = 'pchip'; %'linear'% 'linear' was chosen by Julia in her man-file for
                          % Joos model. Probably pchip is a better approach
                          % for early years
@@ -177,6 +252,101 @@ fig.PaperPositionMode = 'auto';
 fig_pos = fig.PaperPosition;
 fig.PaperSize = [fig_pos(3) fig_pos(4)];
 print(strcat(path_pics,strcat('PastEmissionsGtCO2_',Intpol_method,'.png')), '-dpng')
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Fit optimal parameters for Rafelski Model by least squares and plot results
+% Define the loss function depending on the real observed atmospheric CO2
+% find data until 2005
+PastTotalCemission_int = PastTotalCO2emission_int;
+PastTotalCemission_int(:,2) = PastTotalCO2emission_int(:,2) ./ C2CO2;
+
+minLoss = @(x) LSE_Params( x, PastTotalCemission_int, CO2a_obs, 1958, 2016 );
+
+% value of minLoss for starting parameters
+minLoss([278  0.85])
+
+% optimize parameter
+%[xopt,fval, exitflag, output] = fminsearch(minLoss, [278 0.85]);
+
+xopt1 = [284.1945    0.7647];  % loss minimized 1765-2016, min = 11.7401
+xopt2 = [285.1693    0.8047];  % loss minimized 1958-2016, min = 0.7568
+
+% Loss after minimisation
+minLoss(xopt1)
+minLoss(xopt2)
+% Check that the optimal fit makes sense, up to 2004
+[CO2a, ~, fas, ffer, Aoc, dtdelpCO2a] = JoosModelFix( PastTotalCemission_int, xopt1 );
+% Check that the optimal fit makes sense, up to 2016
+CO2a2 = JoosModelFix( PastTotalCemission_int, xopt2 );
+
+clear minLoss
+
+%%%% Plot fits with the two optimised parameters
+figure_counter = figure_counter +1;
+figure(figure_counter),clf, hold on
+WidthFig  = 600;
+HeightFig = 400;
+set(gcf, 'Position', [ 300 300 WidthFig HeightFig]);
+set(gcf,'PaperPosition', [ 300 300 WidthFig HeightFig])
+set(groot, 'defaultAxesTickLabelInterpreter','latex');
+set(groot, 'defaultLegendInterpreter','latex');
+
+% plot values
+line(CO2a(:,1),CO2a(:,2), 'Color', colMat(4,:), 'LineWidth',2);
+line(CO2a2(:,1),CO2a2(:,2), 'Color', BrightCol(4,:), 'LineWidth',2);
+line(CO2a_obs(:,1),CO2a_obs(:,2), 'Color', colMat(1,:), 'LineWidth',2);
+
+% define axis and labels
+ylim([260 450])
+h = legend('Calculated atmospheric CO2  optimised from 1765',...
+       'Calculated atmospheric CO2 optimised from 1958',...
+       'Observed atmospheric CO2','location','northwest'); set(h, 'Interpreter', 'latex');
+h = ylabel('Atmospheric ${\rm CO_2}$ [ppm]'); set(h, 'Interpreter', 'latex');
+h = xlabel('year'); set(h, 'Interpreter', 'latex');
+h = title('Modeled vs. Observed CO2'); set(h, 'Interpreter', 'latex');
+grid
+set(gca, 'fontsize', 14);
+
+% print options
+set(gcf,'papersize',[12 12])
+fig = gcf;
+fig.PaperPositionMode = 'auto';
+fig_pos = fig.PaperPosition;
+fig.PaperSize = [fig_pos(3) fig_pos(4)];
+print(strcat(path_pics,"AtmosphericCO2_fit_",Intpol_method,".png"), '-dpng')
+hold off
+
+%%%% Plot sinks and emissions
+figure_counter = figure_counter +1;
+figure(figure_counter), clf, hold on,
+WidthFig  = 600;
+HeightFig = 400;
+set(gcf, 'Position', [ 300 300 WidthFig HeightFig]);
+set(gcf,'PaperPosition', [ 300 300 WidthFig HeightFig])
+set(groot, 'defaultAxesTickLabelInterpreter','latex');
+set(groot, 'defaultLegendInterpreter','latex');
+
+plot( ff(:,1),ff(:,2),...
+      fas(:,1),Aoc*fas(:,2),...
+      ffer(:,1),ffer(:,2),...
+      LU(:,1),LU(:,2),...
+      dtdelpCO2a(:,1),dtdelpCO2a(:,2), 'LineWidth', 2);
+h = legend('Fossil fuel','Air-sea flux','Land sink','Land use','Change in atmospheric CO2','location','northwest');
+set(h, 'Interpreter', 'latex');
+h = ylabel('ppm/yr');  set(h, 'Interpreter', 'latex');
+h = xlabel('year');  set(h, 'Interpreter', 'latex');
+h = title('Sources and Sinks');  set(h, 'Interpreter', 'latex');
+set(gca, 'fontsize', 14);
+
+% print options
+set(gcf,'papersize',[12 12])
+fig = gcf;
+fig.PaperPositionMode = 'auto';
+fig_pos = fig.PaperPosition;
+fig.PaperSize = [fig_pos(3) fig_pos(4)];
+print(strcat(path_pics,"Emissions_AllSinks_",Intpol_method,".png"), '-dpng')
+hold off
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% %%%% Read the AR5 2 degree scenarios
@@ -378,116 +548,19 @@ deg_Base_correspondence = [1,2,5,8,9,10,11,1,2,3,5,6,7,8,9,10,11,12,... % AME Re
                             repmat(62:64, [1 2])... % ROSE BAU DEF
                             ];
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Fit optimal parameters for Joos Model by least squares
-% Define the loss function depending on the real observed atmospheric CO2
-% find data until 2005
-PastTotalCemission_int = PastTotalCO2emission_int;
-PastTotalCemission_int(:,2) = PastTotalCO2emission_int(:,2) ./ C2CO2;
-
-minLoss = @(x) LSE_Params( x, PastTotalCemission_int, CO2a_obs, 1765, 2016 );
-
-% value of minLoss for starting parameters
-minLoss([0.87 280])
-
-% optimize paramter
-%[xopt,fval, exitflag, output] = fminsearch(minLoss, [0.87    278]);
-
-xopt1 = [0.2333  284.1919]  % loss minimized 1765-2016
-xopt2 = [0.2585  285.1705]  % loss minimized 1958-2016
-%xopt = [0.14 281];         % manual minLoss=0.9392 on 1958-2016
-%xopt = [0.19 275];         % manual minLoss=0.9392 on 1958-2016
-
-%xopt1 = [2.7852  285.6958]  % loss minimized 1765-2016
-%xopt2 = [2.7852  285.6960]  % loss minimized 1958-2016
-%xopt = [0.14 281];         % manual minLoss=0.9392 on 1958-2016
-%xopt = [0.19 275];         % manual minLoss=0.9392 on 1958-2016
-
-
-
-% Loss after minimisation
-minLoss(xopt1)
-minLoss(xopt2)
-% Check that the optimal fit makes sense, up to 2004
-[CO2a, ~, fas, ffer, Aoc, dtdelpCO2a] = JoosModelFix( PastTotalCemission_int, xopt1 );
-% Check that the optimal fit makes sense, up to 2016
-CO2a2 = JoosModelFix( PastTotalCemission_int, xopt2 );
-
-clear minLoss
-
-% Plot fit with optimised parameters
-figure_counter = figure_counter +1;
-figure(figure_counter),clf, hold on
-WidthFig  = 600;
-HeightFig = 400;
-set(gcf, 'Position', [ 300 300 WidthFig HeightFig]);
-set(gcf,'PaperPosition', [ 300 300 WidthFig HeightFig])
-set(groot, 'defaultAxesTickLabelInterpreter','latex');
-set(groot, 'defaultLegendInterpreter','latex');
-
-line(CO2a(:,1),CO2a(:,2), 'Color', colMat(4,:), 'LineWidth',2);
-line(CO2a2(:,1),CO2a2(:,2), 'Color', BrightCol(4,:), 'LineWidth',2);
-line(CO2a_obs(:,1),CO2a_obs(:,2), 'Color', colMat(1,:), 'LineWidth',2);
-
-ylim([260 450])
-
-h = legend('Calculated atmospheric CO2  optimised from 1765',...
-       'Calculated atmospheric CO2 optimised from 1958',...
-       'Observed atmospheric CO2','location','northwest'); set(h, 'Interpreter', 'latex');
-h = ylabel('Atmospheric ${\rm CO_2}$ [ppm]'); set(h, 'Interpreter', 'latex');
-h = xlabel('year'); set(h, 'Interpreter', 'latex');
-h = title('Modeled vs. Observed CO2'); set(h, 'Interpreter', 'latex');
-grid
-set(gca, 'fontsize', 14);
-
-% print options
-set(gcf,'papersize',[12 12])
-fig = gcf;
-fig.PaperPositionMode = 'auto';
-fig_pos = fig.PaperPosition;
-fig.PaperSize = [fig_pos(3) fig_pos(4)];
-print(strcat(path_pics,"AtmosphericCO2_fit_",Intpol_method,".png"), '-dpng')
-hold off
-
-figure_counter = figure_counter +1;
-figure(figure_counter), clf, hold on,
-WidthFig  = 600;
-HeightFig = 400;
-set(gcf, 'Position', [ 300 300 WidthFig HeightFig]);
-set(gcf,'PaperPosition', [ 300 300 WidthFig HeightFig])
-set(groot, 'defaultAxesTickLabelInterpreter','latex');
-set(groot, 'defaultLegendInterpreter','latex');
-
-plot( ff(:,1),ff(:,2),...
-      fas(:,1),Aoc*fas(:,2),...
-      ffer(:,1),ffer(:,2),...
-      LU(:,1),LU(:,2),...
-      dtdelpCO2a(:,1),dtdelpCO2a(:,2), 'LineWidth', 2);
-h = legend('Fossil fuel','Air-sea flux','Land sink','Land use','Change in atmospheric CO2','location','northwest');
-set(h, 'Interpreter', 'latex');
-h = ylabel('ppm/yr');  set(h, 'Interpreter', 'latex');
-h = xlabel('year');  set(h, 'Interpreter', 'latex');
-h = title('Sources and Sinks');  set(h, 'Interpreter', 'latex');
-set(gca, 'fontsize', 14);
-
-% print options
-set(gcf,'papersize',[12 12])
-fig = gcf;
-fig.PaperPositionMode = 'auto';
-fig_pos = fig.PaperPosition;
-fig.PaperSize = [fig_pos(3) fig_pos(4)];
-print(strcat(path_pics,"Emissions_AllSinks_",Intpol_method,".png"), '-dpng')
-hold off
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% %%%% Get COa curves for baseline and 2 degr scenario
+xopt = xopt2;
 %%%% baseline
 COa_base      = zeros(size(data_AR5base));
 COa_base(:,1) = data_AR5base(:,1);
 % Use Joos model to get the COa curves
 for scenarioNum = 2:size(data_AR5base,2)
     Index_NoNmissing = data_AR5base(:,scenarioNum)~=0;
-    COa = JoosModelFix( data_AR5base(Index_NoNmissing,[1, scenarioNum]), xopt1 );
+    tmp = data_AR5base(Index_NoNmissing,[1, scenarioNum]);
+    tmp(:,2) = tmp(:,2)./ C2CO2;
+    COa = JoosModelFix( tmp, xopt );
     COa_base(1:size(COa,1),scenarioNum) = COa(:,2);
     clear Ie;
 end
@@ -531,7 +604,9 @@ COa_2deg(:,1) = data_AR52deg(:,1);
 % Use Joos model to get the COa curves
 for scenarioNum = 2:size(data_AR52deg,2)
     Index_NoNmissing = data_AR52deg(:,scenarioNum)~=0;
-    COa = JoosModelFix( data_AR52deg(Index_NoNmissing,[1, scenarioNum]), xopt1 );
+    tmp = data_AR52deg(Index_NoNmissing,[1, scenarioNum]);
+    tmp(:,2) = tmp(:,2)./ C2CO2;
+    COa = JoosModelFix( tmp, xopt );
     COa_2deg(1:size(COa,1),scenarioNum) = COa(:,2);
     clear Ie;
 end
@@ -568,6 +643,7 @@ fig.PaperSize = [fig_pos(3) fig_pos(4)];
 print(strcat(path_pics,strcat('AtmosphericCO2_AR5_2deg_',glue,'.png')), '-dpng')
 hold off
 
-clear fig ans COa scale h fig gig_pos HeightFig WidthFig scale
+clear fig ans COa scale h fig gig_pos HeightFig WidthFig scale...
+      fig_pos fval exitflag figure_counter Index_NoNmissing scenarioNum output tmp
 %save(strcat('workspaces/JoosModel_xopt_AR5_pchip_',glue,'.mat'))
 

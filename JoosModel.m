@@ -1,7 +1,7 @@
 % Joos model function
 function [CO2a, ff, fas, ffer, Aoc, dtdelpCO2a] = JoosModel( DATA, x )
 
-beta = x(1); CO2_preind = 280; c1 = x(2);
+beta = x(3); CO2_preind = x(1); c1 = x(2);
 start_year = DATA(1,1);
 end_year   = DATA(end,1);
 ts = 12; % timesteps per year

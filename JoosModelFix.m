@@ -1,9 +1,12 @@
 % Joos model function
 function [CO2a, data, fas, ffer, Aoc, dtdelpCO2a] = JoosModelFix( data, x )
-
-beta       = 0.287;      % 0.287; % fertilization factor
-CO2_preind = x(2);       % 278 in Joos, but tweaking to match observed record
-c1         = x(1);       % 0.85; % sinks scaling factor
+if length(x)<3
+    beta       = 0.287;      % 0.287; % fertilization factor
+else
+    beta = x(3);
+end
+CO2_preind = x(1);       % 278 in Joos, but tweaking to match observed record
+c1         = x(2);       % 0.85; % sinks scaling factor
 
 ts         = 12;          % timesteps per year
 dt         = 1/ts;

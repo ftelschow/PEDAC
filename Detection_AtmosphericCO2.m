@@ -19,9 +19,11 @@ clear path
 fig_counter=1;
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Load data from preprocessing
-glue = 'direct';
+glue = 'cont';
+%glue = 'direct';
 load(strcat('workspaces/JoosModel_xopt_AR5_pchip_',glue,'.mat'))
 load(strcat(path_data,'dataObservedCO2.mat'))
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 T = readtable(strcat(path_data,'Peters2017_Fig2_past.txt'));
 PetersPast = T.Variables;
@@ -149,9 +151,9 @@ plot(res)
 plot([0 60], [0 0])
 hold off
 subplot(2,2,2)
-autocorr(res,'NumLags',10,'NumSTD',2)
+autocorr(res,'NumLags',10,'NumSTD',2);
 subplot(2,2,3)
-parcorr(res)
+parcorr(res);
 subplot(2,2,4)
 qqplot(res)
 
@@ -187,7 +189,7 @@ m2 = ar(resa,2)
 % kolmogorov smirnow
 [h,p] = kstest(resa/stdResa) % test does not reject!
 
-resa2 = resa(2:end)- 0.9009*resa(1:end-1) 
+resa2 = resa(2:end)- 1*resa(1:end-1) ;
 figure(3), clf
 subplot(2,2,1), hold on
 plot(resa2)
@@ -207,19 +209,27 @@ stdResa2 = std(resa2)
 [h,p] = kstest(resa2/stdResa2) % test does not reject!
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% %%%% Apply detection method to the Models
-cut_year1 = 2005-1;
-cut_year2 = 2050-1;
+%% %%%% Apply detection method to the Models using atmospheric growth
+cut_year1 = 2006;
+cut_year2 = 2050;
 years     = cut_year1:cut_year2;
 Nscenario = size(data_AR52deg,2);
 
 out = [41 44 52];
+out = -[41 44 52];
+%
+scenario = 2;
+times      = 1:size(COa_base,1);
+index_cut1 = times(COa_base(:,1)==cut_year1);
+index_cut2 = times(COa_base(:,1)==cut_year2);
+drift_alter = diff( [COa_2deg(index_cut1-12,scenario);...
+                    COa_2deg(index_cut1:12:index_cut2,scenario)]);
 
 % Generate AR process for imbalance
 Msim = 1e5;
 T    = length(drift_alter);
-rho = 0;
-sigma  = 0.4647;
+rho  = 0;
+sigma  = stdRes;
 
 % compute threshold
 IMBALANCE = generate_AR(Msim, T, rho, sigma);
@@ -245,7 +255,7 @@ for scenario = 2:Nscenario
         drift_alter = diff( [COa_2deg(index_cut1-12,scenario);...
                             COa_2deg(index_cut1:12:index_cut2,scenario)]);
 
-        figure(1), clf, hold on
+    figure(1), clf, hold on
     WidthFig  = 600;
     HeightFig = 400;
     set(gcf, 'Position', [ 300 300 WidthFig HeightFig]);
@@ -257,8 +267,9 @@ for scenario = 2:Nscenario
         title('Growth Rates')
     h = xlabel('years');  set(h, 'Interpreter', 'latex');
     h = ylabel('growth rate [ppm/year]');  set(h, 'Interpreter', 'latex');
-    h = legend('BAU','AR5',  'location','northwest');  set(h, 'Interpreter', 'latex');
-    grid
+    h = legend( namesBase{deg_Base_correspondence(scenario-1)},...
+                names2deg{scenario-1},...
+                'location','northwest');  set(h, 'Interpreter', 'latex');    grid
     set(gca, 'fontsize', 14);
 
     set(gcf,'papersize',[12 12])
@@ -271,19 +282,267 @@ for scenario = 2:Nscenario
 
         [probs, dyear,~] = get_Detection2( IMBALANCE, [drift_base,drift_alter]',...
                                            thresholdsF, q);
-        plot_Detection( dyear, probs, 2005, q, strcat(path_pics,'detect_',glue,'/Sc_',num2str(scenario),'_detection.png'));
+        plot_Detection( dyear, probs, 2005, q, strcat(path_pics,'detect_',glue,'/Sc_',num2str(scenario),'_detection_Growth_rates.png'));
 
         detect_year(scenario) = dyear;
     end
 end
 
-save(strcat('workspaces/Times_AR5_pchip_',glue,'.mat'), 'detect_year')
+save(strcat('workspaces/Times_graCO2_AR5_pchip_',glue,'.mat'), 'detect_year')
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-load(strcat('workspaces/Times_AR5_pchip_',glue,'.mat'), 'detect_year')
+load(strcat('workspaces/Times_graCO2_AR5_pchip_',glue,'.mat'), 'detect_year')
 
 m_detect   = mean(detect_year)
 std_detect = std(detect_year)
 quantile(detect_year, [0.05 0.25 0.5 0.75 0.95])
+    figure(1), clf, hold on
+    WidthFig  = 600;
+    HeightFig = 400;
+    set(gcf, 'Position', [ 300 300 WidthFig HeightFig]);
+    set(gcf,'PaperPosition', [ 300 300 WidthFig HeightFig])
+    set(groot, 'defaultAxesTickLabelInterpreter','latex');
+    set(groot, 'defaultLegendInterpreter','latex');
 
-histogram(detect_year(detect_year~=0))
-title('detection times AR5 vs Baseline')
+    histogram(detect_year(detect_year~=0))
+    title('Detection Times 2deg vs Baseline')
+    xlim([0 50])
+        ylim([0 25])
+        
+    h = xlabel('years until detection');  set(h, 'Interpreter', 'latex');
+    h = ylabel('Frequency');  set(h, 'Interpreter', 'latex');
+     set(gca, 'fontsize', 14);
+
+    set(gcf,'papersize',[12 12])
+    fig = gcf;
+    fig.PaperPositionMode = 'auto';
+    fig_pos = fig.PaperPosition;
+    fig.PaperSize = [fig_pos(3) fig_pos(4)];
+    print(strcat(path_pics,'detect_',glue,'/Hist_Detect_Growth_rates.png'), '-dpng')
+    hold off
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% %%%% Apply detection method to the Models using atmospheric CO2
+cut_year1 = 2006;
+cut_year2 = 2050;
+years     = (cut_year1-1):cut_year2;
+Nscenario = size(data_AR52deg,2);
+
+out = [41 44 52];
+out = -[41 44 52];
+%
+scenario = 2;
+times      = 1:size(COa_base,1);
+index_cut1 = times(COa_base(:,1)==cut_year1);
+index_cut2 = times(COa_base(:,1)==cut_year2);
+drift_alter = [COa_2deg(index_cut1-12,scenario);...
+                    COa_2deg(index_cut1:12:index_cut2,scenario)];
+
+% Generate AR process for imbalance
+Msim = 1e5;
+T    = length(drift_alter);
+rho  = 0.9;
+sigma  = stdResa;
+
+% compute threshold
+IMBALANCE = generate_AR(Msim, T, rho, sigma);
+q = 0.05;
+thresholdsF  = get_Thresholds(IMBALANCE, q);
+
+% simulate imbalance as error processes
+IMBALANCE = generate_AR(Msim, T, rho, sigma);
+
+% save detection time
+detect_year = zeros([1 Nscenario]);
+
+for scenario = 2:Nscenario
+    if ~any(out==deg_Base_correspondence(scenario-1)+1)
+        % Find cutting point
+        times      = 1:size(COa_base,1);
+        index_cut1 = times(COa_base(:,1)==cut_year1);
+        index_cut2 = times(COa_base(:,1)==cut_year2);
+
+        % define drifts for base and 2deg scenario
+        drift_base  = [COa_base(index_cut1-12,deg_Base_correspondence(scenario-1)+1 );...
+                            COa_base(index_cut1:12:index_cut2,deg_Base_correspondence(scenario-1)+1)];
+        drift_alter = [COa_2deg(index_cut1-12,scenario);...
+                            COa_2deg(index_cut1:12:index_cut2,scenario)];
+
+    figure(1), clf, hold on
+    WidthFig  = 600;
+    HeightFig = 400;
+    set(gcf, 'Position', [ 300 300 WidthFig HeightFig]);
+    set(gcf,'PaperPosition', [ 300 300 WidthFig HeightFig])
+    set(groot, 'defaultAxesTickLabelInterpreter','latex');
+    set(groot, 'defaultLegendInterpreter','latex');
+        plot(years, drift_base, 'LineWidth', 1.5, 'Color', BrightCol(1,:))
+        plot(years, drift_alter, 'LineWidth', 1.5, 'Color', BrightCol(3,:))
+        title('atmospheric CO2')
+    h = xlabel('years');  set(h, 'Interpreter', 'latex');
+    h = ylabel('atmospheric CO2 [ppm/year]');  set(h, 'Interpreter', 'latex');
+    h = legend( namesBase{deg_Base_correspondence(scenario-1)},...
+                names2deg{scenario-1},...
+                'location','northwest');  set(h, 'Interpreter', 'latex');    grid
+    set(gca, 'fontsize', 14);
+
+    set(gcf,'papersize',[12 12])
+    fig = gcf;
+    fig.PaperPositionMode = 'auto';
+    fig_pos = fig.PaperPosition;
+    fig.PaperSize = [fig_pos(3) fig_pos(4)];
+    print(strcat(path_pics,'detect_',glue,'/Sc_',num2str(scenario),'_aCO2.png'), '-dpng')
+    hold off
+
+        [probs, dyear,~] = get_Detection2( IMBALANCE, [drift_base,drift_alter]',...
+                                           thresholdsF, q);
+        plot_Detection( dyear, probs, 2005, q, strcat(path_pics,'detect_',glue,'/Sc_',num2str(scenario),'_detection_aCO2.png'));
+
+        detect_year(scenario) = dyear;
+    end
+end
+
+save(strcat('workspaces/Times_aCO2_AR5_pchip_',glue,'.mat'), 'detect_year')
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+load(strcat('workspaces/Times_aCO2_AR5_pchip_',glue,'.mat'), 'detect_year')
+
+
+m_detect   = mean(detect_year)
+std_detect = std(detect_year)
+quantile(detect_year, [0.05 0.25 0.5 0.75 0.95])
+    figure(1), clf, hold on
+    WidthFig  = 600;
+    HeightFig = 400;
+    set(gcf, 'Position', [ 300 300 WidthFig HeightFig]);
+    set(gcf,'PaperPosition', [ 300 300 WidthFig HeightFig])
+    set(groot, 'defaultAxesTickLabelInterpreter','latex');
+    set(groot, 'defaultLegendInterpreter','latex');
+
+    histogram(detect_year(detect_year~=0))
+    title('Detection Times 2deg vs Baseline')
+    xlim([0 50])
+    ylim([0 25])
+    
+    h = xlabel('years until detection');  set(h, 'Interpreter', 'latex');
+    h = ylabel('Frequency');  set(h, 'Interpreter', 'latex');
+     set(gca, 'fontsize', 14);
+
+    set(gcf,'papersize',[12 12])
+    fig = gcf;
+    fig.PaperPositionMode = 'auto';
+    fig_pos = fig.PaperPosition;
+    fig.PaperSize = [fig_pos(3) fig_pos(4)];
+    print(strcat(path_pics,'detect_',glue,'/Hist_Detect_aCO2.png'), '-dpng')
+    hold off
+    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% %%%% Apply detection method to the Models using atmospheric CO2 and New mean test
+cut_year1 = 2006;
+cut_year2 = 2050;
+years     = (cut_year1-1):cut_year2;
+Nscenario = size(data_AR52deg,2);
+
+out = [41 44 52];
+out = -[41 44 52];
+%
+scenario = 2;
+times      = 1:size(COa_base,1);
+index_cut1 = times(COa_base(:,1)==cut_year1);
+index_cut2 = times(COa_base(:,1)==cut_year2);
+drift_alter = [COa_2deg(index_cut1-12,scenario);...
+                    COa_2deg(index_cut1:12:index_cut2,scenario)];
+
+% Generate AR process for imbalance
+Msim = 1e5;
+T    = length(drift_alter);
+rho  = 0.9;
+sigma  = stdResa;
+
+% compute threshold
+IMBALANCE = generate_AR(Msim, T, rho, sigma);
+q = 0.05;
+thresholdsF  = get_Thresholds(IMBALANCE, q, 'mean');
+
+% simulate imbalance as error processes
+IMBALANCE = generate_AR(Msim, T, rho, sigma);
+
+% save detection time
+detect_year = zeros([1 Nscenario]);
+
+for scenario = 2:Nscenario
+    if ~any(out==deg_Base_correspondence(scenario-1)+1)
+        % Find cutting point
+        times      = 1:size(COa_base,1);
+        index_cut1 = times(COa_base(:,1)==cut_year1);
+        index_cut2 = times(COa_base(:,1)==cut_year2);
+
+        % define drifts for base and 2deg scenario
+        drift_base  = [COa_base(index_cut1-12,deg_Base_correspondence(scenario-1)+1 );...
+                            COa_base(index_cut1:12:index_cut2,deg_Base_correspondence(scenario-1)+1)];
+        drift_alter = [COa_2deg(index_cut1-12,scenario);...
+                            COa_2deg(index_cut1:12:index_cut2,scenario)];
+
+    figure(1), clf, hold on
+    WidthFig  = 600;
+    HeightFig = 400;
+    set(gcf, 'Position', [ 300 300 WidthFig HeightFig]);
+    set(gcf,'PaperPosition', [ 300 300 WidthFig HeightFig])
+    set(groot, 'defaultAxesTickLabelInterpreter','latex');
+    set(groot, 'defaultLegendInterpreter','latex');
+        plot(years, drift_base, 'LineWidth', 1.5, 'Color', BrightCol(1,:))
+        plot(years, drift_alter, 'LineWidth', 1.5, 'Color', BrightCol(3,:))
+        title('atmospheric CO2')
+    h = xlabel('years');  set(h, 'Interpreter', 'latex');
+    h = ylabel('atmospheric CO2 [ppm/year]');  set(h, 'Interpreter', 'latex');
+    h = legend( namesBase{deg_Base_correspondence(scenario-1)},...
+                names2deg{scenario-1},...
+                'location','northwest');  set(h, 'Interpreter', 'latex');    grid
+    set(gca, 'fontsize', 14);
+
+    set(gcf,'papersize',[12 12])
+    fig = gcf;
+    fig.PaperPositionMode = 'auto';
+    fig_pos = fig.PaperPosition;
+    fig.PaperSize = [fig_pos(3) fig_pos(4)];
+    print(strcat(path_pics,'detect_',glue,'/Sc_',num2str(scenario),'_aCO2mean.png'), '-dpng')
+    hold off
+
+        [probs, dyear,~] = get_Detection3( IMBALANCE, [drift_base,drift_alter]',...
+                                           thresholdsF, q);
+        plot_Detection( dyear, probs, 2005, q,...
+                        strcat(path_pics,'detect_',glue,'/Sc_',num2str(scenario),'_detection_aCO2mean.png'));
+
+        detect_year(scenario) = dyear;
+    end
+end
+
+save(strcat('workspaces/Times_aCO2_AR5_pchip_',glue,'.mat'), 'detect_year_mean')
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+load(strcat('workspaces/Times_aCO2_AR5_pchip_',glue,'.mat'), 'detect_year_mean')
+
+
+m_detect   = mean(detect_year)
+std_detect = std(detect_year)
+quantile(detect_year, [0.05 0.25 0.5 0.75 0.95])
+    figure(1), clf, hold on
+    WidthFig  = 600;
+    HeightFig = 400;
+    set(gcf, 'Position', [ 300 300 WidthFig HeightFig]);
+    set(gcf,'PaperPosition', [ 300 300 WidthFig HeightFig])
+    set(groot, 'defaultAxesTickLabelInterpreter','latex');
+    set(groot, 'defaultLegendInterpreter','latex');
+
+    histogram(detect_year(detect_year~=0))
+    title('Detection Times 2deg vs Baseline')
+    xlim([0 50])
+    ylim([0 25])
+    
+    h = xlabel('years until detection');  set(h, 'Interpreter', 'latex');
+    h = ylabel('Frequency');  set(h, 'Interpreter', 'latex');
+     set(gca, 'fontsize', 14);
+
+    set(gcf,'papersize',[12 12])
+    fig = gcf;
+    fig.PaperPositionMode = 'auto';
+    fig_pos = fig.PaperPosition;
+    fig.PaperSize = [fig_pos(3) fig_pos(4)];
+    print(strcat(path_pics,'detect_',glue,'/Hist_Detect_aCO2mean.png'), '-dpng')
+    hold off

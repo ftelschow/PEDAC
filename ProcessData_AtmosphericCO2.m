@@ -372,20 +372,21 @@ for scenarioNum = 2:size(AR52deg_data,2)
     % convert to ppm in C
     data_AR5(:,2)     = data_AR5(:,2) / 10^3 * gtonC_2_ppmC;
     cut_year          = min(data_AR5(:,1));
-    Ie                = find(PastTotalCO2emission(:,1)==cut_year);
-    Ia                = find(PastTotalCO2emission(:,1)==1765);
+    Ie                = find(PastTotalCO2emission_int(:,1)==cut_year);
+    Ia                = find(PastTotalCO2emission_int(:,1)==1765);
     
     % linearly shift prediction to remove discontinuity
     if strcmp(glue,'cont')
-        data_AR5(:,2) = data_AR5(:,2) + PastTotalCO2emission(Ie,2) - data_AR5(1,2);
+        data_AR5(:,2) = data_AR5(:,2) + PastTotalCO2emission_int(Ie,2) - data_AR5(1,2);
     end
     
     % data for tuning the model
-    data_obs = PastTotalCO2emission(Ia:(Ie-1),:);
+    data_obs = PastTotalCO2emission_int(Ia:(Ie-1),:);
     % interpolate the data
-    data_int = getSourceData_fabian( 12, [data_obs;data_AR5], Intpol_method);
+    data_int = getSourceData_fabian( 12, data_AR5, 'linear');    
     
-    data_AR52deg( 1:size(data_int,1), scenarioNum ) = data_int(:,2);
+    data_AR52deg( 1:(size(data_int,1)+size(data_obs,1)), scenarioNum ) = ...
+                        [data_obs(:,2); data_int(:,2)];
 end
 
 % Clear workspace
@@ -450,20 +451,22 @@ for scenarioNum = 2:size(AR5base_data,2)
     % convert to ppm in C
     data_AR5(:,2)     = data_AR5(:,2) / 10^3 * gtonC_2_ppmC;
     cut_year          = min(data_AR5(:,1));
-    Ie                = find(PastTotalCO2emission(:,1)==cut_year);
-    Ia                = find(PastTotalCO2emission(:,1)==1765);
+    Ie                = find(PastTotalCO2emission_int(:,1)==cut_year);
+    Ia                = find(PastTotalCO2emission_int(:,1)==1765);
 
     % linearly shift prediction to remove discontinuity
     if strcmp(glue,'cont')
-        data_AR5(:,2) = data_AR5(:,2) + PastTotalCO2emission(Ie,2) - data_AR5(1,2);
+        data_AR5(:,2) = data_AR5(:,2) + PastTotalCO2emission_int(Ie,2) - data_AR5(1,2);
     end
     
     % data for tuning the model
-    data_obs = PastTotalCO2emission(Ia:(Ie-1),:);
+    data_obs = PastTotalCO2emission_int(Ia:(Ie-1),:);
     % interpolate the data
-    data_int = getSourceData_fabian( 12, [data_obs;data_AR5], Intpol_method);
+    data_int = getSourceData_fabian( 12, data_AR5, 'linear');    
     
-    data_AR5base( 1:size(data_int,1), scenarioNum ) = data_int(:,2);
+    % glue together
+    data_AR5base( 1:(size(data_int,1)+size(data_obs,1)), scenarioNum ) = ...
+                        [data_obs(:,2); data_int(:,2)];
 end
 
 % Clear workspace
@@ -580,7 +583,7 @@ for scenarioNum = 2:size(COa_base,2)
     Index_NoNmissing = find(COa_base(:,scenarioNum)~=0);
     plot(COa_base( Index_NoNmissing, 1 ), COa_base( Index_NoNmissing, scenarioNum ))
 end
-xlim([1763 2102])
+xlim([2000 2102])
 ylim([250 1150])
 h = xlabel('years');  set(h, 'Interpreter', 'latex');
 h = ylabel('C02 [ppm]');  set(h, 'Interpreter', 'latex');
@@ -627,8 +630,8 @@ for scenarioNum = 2:size(COa_2deg,2)
     plot(COa_2deg( Index_NoNmissing, 1 ), COa_2deg( Index_NoNmissing, scenarioNum ))
 end
 line([2005 2005],[-10, 1e4],'Color','black','LineStyle','--')
-xlim([1763 2102])
-ylim([250 550])
+xlim([2000 2102])
+ylim([250 1150])
 h = title('2 Degree Predictions for CO2 in Atmosphere (AR5)');  set(h, 'Interpreter', 'latex');
 h = xlabel('years');  set(h, 'Interpreter', 'latex');
 h = ylabel('C02 [ppm]');  set(h, 'Interpreter', 'latex');
@@ -643,7 +646,158 @@ fig.PaperSize = [fig_pos(3) fig_pos(4)];
 print(strcat(path_pics,strcat('AtmosphericCO2_AR5_2deg_',glue,'.png')), '-dpng')
 hold off
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Plot atmospheric CO2 and growth of AR models versus its baseline
+%load(strcat('workspaces/JoosModel_xopt_AR5_pchip_',glue,'.mat'))
+
+T = readtable(strcat(path_data,'ar5_baseline_world_cO2.csv'));
+namesBase_t = T(2:end, 1:2);
+namesBase   = cell([1 size(namesBase_t,1)]);
+
+for k = 1:size(namesBase_t,1)
+    namesBase{k} = [namesBase_t.Var1{k} ': ' namesBase_t.Var2{k}];
+end
+
+T = readtable(strcat(path_data,'ar5_2deg_world_cO2_modFT.csv'));
+names2deg_t = T(2:end, 1:2);
+names2deg   = cell([1 size(names2deg_t,1)]);
+
+for k = 1:size(names2deg_t,1)
+    names2deg{k} = [names2deg_t.Var1{k} ': ' names2deg_t.Var2{k}];
+end
+
+clear k names2deg_t namesBase_t
+
+years = COa_2deg(:,1);
+
+COa_2deg(COa_2deg==0) = NaN;
+COa_base(COa_base==0) = NaN;
+
+for scenario = 2:size(COa_2deg,2)
+
+figure(1), clf, hold on
+    WidthFig  = 600;
+    HeightFig = 400;
+    set(gcf, 'Position', [ 300 300 WidthFig HeightFig]);
+    set(gcf,'PaperPosition', [ 300 300 WidthFig HeightFig])
+    set(groot, 'defaultAxesTickLabelInterpreter','latex');
+    set(groot, 'defaultLegendInterpreter','latex');
+    
+        plot(years, COa_base(:,deg_Base_correspondence(scenario-1)+1), 'LineWidth', 1.5, 'Color', BrightCol(5,:))
+        plot(years, COa_2deg(:,scenario), 'LineWidth', 1.5, 'Color', BrightCol(1,:))
+        title('Atmospheric CO2')
+        xlim([1990 2060])
+        h = xlabel('years');  set(h, 'Interpreter', 'latex');
+        h = ylabel('atmospheric CO2 [ppm/year]');  set(h, 'Interpreter', 'latex');
+        h = legend( namesBase{deg_Base_correspondence(scenario-1)},...
+                    names2deg{scenario-1},...
+                    'location','northwest');  set(h, 'Interpreter', 'latex');
+        grid
+        set(gca, 'fontsize', 14);
+        hold off
+        
+    set(gcf,'papersize',[12 12])
+    fig = gcf;
+    fig.PaperPositionMode = 'auto';
+    fig_pos = fig.PaperPosition;
+    fig.PaperSize = [fig_pos(3) fig_pos(4)];
+    print(strcat(path_pics,'ARmodels/',glue,'/Sc_',num2str(scenario),'_aCO2.png'), '-dpng')
+hold off
+end
+
+
+for scenario = 2:size(COa_2deg,2)
+
+figure(2), clf, hold on
+    WidthFig  = 600;
+    HeightFig = 400;
+    set(gcf, 'Position', [ 300 300 WidthFig HeightFig]);
+    set(gcf,'PaperPosition', [ 300 300 WidthFig HeightFig])
+    set(groot, 'defaultAxesTickLabelInterpreter','latex');
+    set(groot, 'defaultLegendInterpreter','latex');
+    
+        plot(years(1:end-1), diff(COa_base(:,deg_Base_correspondence(scenario-1)+1)), 'LineWidth', 1.5, 'Color', BrightCol(5,:))
+        plot(years(1:end-1), diff(COa_2deg(:,scenario)), 'LineWidth', 1.5, 'Color', BrightCol(1,:))
+        title('Atmospheric Growth Rate CO2')
+        xlim([1990 2060])
+        h = xlabel('years');  set(h, 'Interpreter', 'latex');
+        h = ylabel('atmospheric growth rate CO2 [ppm]');  set(h, 'Interpreter', 'latex');
+        h = legend( namesBase{deg_Base_correspondence(scenario-1)},...
+                    names2deg{scenario-1},...
+                    'location','northwest');  set(h, 'Interpreter', 'latex');
+        grid
+        set(gca, 'fontsize', 14);
+        hold off
+        
+    set(gcf,'papersize',[12 12])
+    fig = gcf;
+    fig.PaperPositionMode = 'auto';
+    fig_pos = fig.PaperPosition;
+    fig.PaperSize = [fig_pos(3) fig_pos(4)];
+    print(strcat(path_pics,'ARmodels/',glue,'/Sc_',num2str(scenario),'_graCO2.png'), '-dpng')
+hold off
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Plot atmospheric CO2 and growth of AR models versus its baseline
+%load(strcat('workspaces/JoosModel_xopt_AR5_pchip_',glue,'.mat'))
+
+T = readtable(strcat(path_data,'ar5_baseline_world_cO2.csv'));
+namesBase_t = T(2:end, 1:2);
+namesBase   = cell([1 size(namesBase_t,1)]);
+
+for k = 1:size(namesBase_t,1)
+    namesBase{k} = [namesBase_t.Var1{k} ': ' namesBase_t.Var2{k}];
+end
+
+T = readtable(strcat(path_data,'ar5_2deg_world_cO2_modFT.csv'));
+names2deg_t = T(2:end, 1:2);
+names2deg   = cell([1 size(names2deg_t,1)]);
+
+for k = 1:size(names2deg_t,1)
+    names2deg{k} = [names2deg_t.Var1{k} ': ' names2deg_t.Var2{k}];
+end
+
+clear k names2deg_t namesBase_t
+
+years = COa_2deg(:,1);
+
+data_AR52deg(data_AR52deg==0) = NaN;
+data_AR5base(data_AR5base==0) = NaN;
+
+for scenario = 2:size(data_AR52deg,2)
+
+figure(1), clf, hold on
+    WidthFig  = 600;
+    HeightFig = 400;
+    set(gcf, 'Position', [ 300 300 WidthFig HeightFig]);
+    set(gcf,'PaperPosition', [ 300 300 WidthFig HeightFig])
+    set(groot, 'defaultAxesTickLabelInterpreter','latex');
+    set(groot, 'defaultLegendInterpreter','latex');
+    
+        plot(years(1:end-1), diff(data_AR5base(:,deg_Base_correspondence(scenario-1)+1)), 'LineWidth', 1.5, 'Color', BrightCol(5,:))
+        plot(years(1:end-1), diff(data_AR52deg(:,scenario)), 'LineWidth', 1.5, 'Color', BrightCol(1,:))
+        title('Emissions CO2')
+        xlim([1990 2060])
+        h = xlabel('years');  set(h, 'Interpreter', 'latex');
+        h = ylabel('emission CO2 [ppm C]');  set(h, 'Interpreter', 'latex');
+        h = legend( namesBase{deg_Base_correspondence(scenario-1)},...
+                    names2deg{scenario-1},...
+                    'location','northwest');  set(h, 'Interpreter', 'latex');
+        grid
+        set(gca, 'fontsize', 14);
+        hold off
+        
+    set(gcf,'papersize',[12 12])
+    fig = gcf;
+    fig.PaperPositionMode = 'auto';
+    fig_pos = fig.PaperPosition;
+    fig.PaperSize = [fig_pos(3) fig_pos(4)];
+    print(strcat(path_pics,'ARmodels/',glue,'/Sc_',num2str(scenario),'_emissionCO2.png'), '-dpng')
+hold off
+end
+%%
 clear fig ans COa scale h fig gig_pos HeightFig WidthFig scale...
       fig_pos fval exitflag figure_counter Index_NoNmissing scenarioNum output tmp
-%save(strcat('workspaces/JoosModel_xopt_AR5_pchip_',glue,'.mat'))
 
+%save(strcat('workspaces/JoosModel_xopt_AR5_pchip_',glue,'.mat'))

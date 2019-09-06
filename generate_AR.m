@@ -19,4 +19,5 @@ function X = generate_AR(Msim, N, rho, sigma, rho_se)
           X(i,m) = rho1(m)*X(i-1,m) + sqrt(1-rho1(m)^2)*eps(i);
       end
   end
-X = sigma*X;
+  
+  X = sigma*X;

@@ -12,8 +12,8 @@ years = yearStart + (1:size(probs,1))-1;
 
 figure(1), clf, hold on,
 % Define size and location of the figure [xPos yPos WidthFig HeightFig]
-WidthFig  = 600;
-HeightFig = 400;
+WidthFig  = 500*1.1;
+HeightFig = 400*1.1;
 set(gcf, 'Position', [ 300 300 WidthFig HeightFig]);
 set(gcf,'PaperPosition', [ 300 300 WidthFig HeightFig])
 set(groot, 'defaultAxesTickLabelInterpreter','latex');

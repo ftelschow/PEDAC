@@ -6,8 +6,7 @@ function [PT_base, PT_alter] = get_futureDetectProb(process, drift, threshold)
   % thresholds
   for i = 1:length(threshold)
     PT_base(:,i)  = CumDetectTimeProb( process, -threshold(i) );
-    PT_alter(:,i) = CumDetectTimeProb( process + drift(2,:)'-drift(1,:)',...
-                                       -threshold(i));
+    PT_alter(:,i) = CumDetectTimeProb( process + drift(2,:)'-drift(1,:)', -threshold(i));
   end
   
 

@@ -12,15 +12,7 @@ if nargin < 3
     method = 'pchip';
 end
 % construct the monthly time vector
-times = [];
-for i = 1:(length(DATA(:,1))-1)
-    gap = (DATA(i+1,1)-DATA(i,1));
-    times = [times, double(DATA(i,1)) + double(0:1/ts:((1-1/ts)))];
-    for j = 1:gap-1
-        times = [times, double(DATA(i,1))+j + double(0:1/ts:((1-1/ts)))];
-    end
-end
-times = [times, DATA(end,1)];
+times = DATA(1,1):1/ts:DATA(end,1);
 
 % allocate the monthly output
 DATAmo = zeros([length(times)' 2]);

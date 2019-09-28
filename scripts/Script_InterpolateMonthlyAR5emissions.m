@@ -31,7 +31,7 @@ C2CO2       = 44.01/12.011;
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%    Read the AR5 data and interplote it to monthly values 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% AR5 2deg world scenarios for emissions in gigatons C/year
+% AR5 2deg world scenarios for emissions in Mt CO2/year
 AR52deg_data = csvread(strcat(path_data,'ar5_2deg_world_cO2_modFT.csv'),1,5);
 % amount of different scenarios
 N2deg =  size(AR52deg_data,1);
@@ -147,12 +147,22 @@ end
 
 clear k names2deg_t namesBase_t
 
-%%%% produce output
+deg_Base_correspondence = [ 1,2,5,8,9,10,11,1,2,3,5,6,7,8,9,10,11,12,... % AME Reference
+                            repmat(13:21, [1 2]),... % AMPERE2-Base-FullTech-OPT
+                            repmat(22:32, [1 4]),... % AMPERE3-Base
+                            36,38, 35,36,38, repmat(33:39, [1 2]),... % EMF22 Reference
+                            40,41,43,44,46,47,48,49,50,51,52,53,54,... % EMF27-Base-FullTech
+                            40:54,... % EMF27-Base-FullTech
+                            repmat(55:61, [1 2]),... % LIMITS-Base
+                            repmat(62:64, [1 2])... % ROSE BAU DEF
+                           ];
+
+%%%% produce output .mat
 save( strcat(path_data, 'Emissions_FutureAR5Montly.mat'),...
                                     'data_AR52deg', 'data_AR5base',...
                                     'names2deg', 'namesBase',...
-                                    'cut_yearbase', 'cut_year2deg')
-%                                     'Correspondence')
+                                    'cut_yearbase', 'cut_year2deg',...
+                                    'deg_Base_correspondence')
 
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

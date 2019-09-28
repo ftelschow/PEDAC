@@ -4,7 +4,7 @@
 % time frame 1765 to present.
 % data needs to have in the first column years as an entry 
 
-function [DATAmo] = getSourceData_fabian( ts, DATA, method )
+function [DATAmo] = interpolData( ts, DATA, method )
 if nargin < 3
     method = 'pchip';
 end

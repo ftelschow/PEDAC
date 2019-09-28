@@ -54,7 +54,7 @@ NOAA(:,2:3) = NOAA(:,2:3) / gtonC_2_ppmC;
 year_s = 1958; % start year used in optimization
 year_e = 2005; % end year used in optimization
 
-load(strcat(path_data, 'RafelskiModelFit_', num2str(year_s),'_',...
+load(strcat(path_data, 'Fit_RafelskiModelAtmosphericCO2', num2str(year_s),'_',...
       num2str(year_e),'.mat'))
 
 %%%% Get annual growth rate from the model fit
@@ -66,6 +66,9 @@ grCO2a      = CO2a(1:end-1,:);
 grCO2a(:,2) = diff(CO2a(:,2));
 % convert ppm CO2 to GtCO2
 grCO2a(:,2) = grCO2a(:,2) / gtonC_2_ppmC;
+
+load( strcat(path_data, 'Emissions_PastMontly.mat') )
+PastTotalCO2emission = PastTotalCO2emission(3013-59*12:12:end,:);
 
 clear T year_s year_e
 
@@ -84,6 +87,7 @@ plot( PetersPast(:,1), PetersPast(:,2), 'LineWidth', 1.5, 'Color', BrightCol(2,:
 plot( PetersPast(:,1), PetersPast(:,3), 'LineWidth', 1.5, 'Color', BrightCol(1,:) )
 plot( NOAA(:,1),NOAA(:,2), 'LineWidth', 1.5, 'Color', BrightCol(4,:) );
 plot( grCO2a(:,1), grCO2a(:,2), 'LineWidth', 1.5, 'Color', BrightCol(5,:) );
+plot( PastTotalCO2emission(:,1), PastTotalCO2emission(:,2), 'LineWidth', 1.5, 'Color', BrightCol(3,:) );
   
 xlim([PetersPast(1,1) PetersPast(end,1)])
 
@@ -91,7 +95,8 @@ h = title('Comparison of Atmospheric Growth Rates');  set(h, 'Interpreter', 'lat
 h = xlabel('years');  set(h, 'Interpreter', 'latex');
 h = ylabel('growth rate [GtCO2/year]');  set(h, 'Interpreter', 'latex');
 h = legend('Peters et al observation','Peters et al reconstruction',...
-           'NOAA observations', 'Reconstruction from Rafelski model',...
+           'NOAA observations', 'reconstruction from Rafelski model',...
+           'past total emissions (Boden+Houghton)',...
            'location','northwest');  set(h, 'Interpreter', 'latex');
 grid
 set(gca, 'fontsize', 14);

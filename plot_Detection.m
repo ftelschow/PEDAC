@@ -12,8 +12,8 @@ years = yearStart + (1:size(probs,1))-1;
 
 figure(1), clf, hold on,
 % Define size and location of the figure [xPos yPos WidthFig HeightFig]
-WidthFig  = 500*1.1;
-HeightFig = 400*1.1;
+WidthFig  = 550;
+HeightFig = 450;
 set(gcf, 'Position', [ 300 300 WidthFig HeightFig]);
 set(gcf,'PaperPosition', [ 300 300 WidthFig HeightFig])
 set(groot, 'defaultAxesTickLabelInterpreter','latex');
@@ -27,7 +27,7 @@ plot([years(dyear), years(dyear)], [-0.95, 2.95], 'k--')
 grid
 
 h = xlabel("years");  set(h, 'Interpreter', 'latex');
-h = ylabel("Cummulated Probability of Detection");  set(h, 'Interpreter', 'latex');
+h = ylabel("cummulated probability of detection");  set(h, 'Interpreter', 'latex');
 h = legend('False Detection','True Detection','location','east');
 set(h, 'Interpreter', 'latex');
 

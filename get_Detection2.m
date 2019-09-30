@@ -1,10 +1,11 @@
 function [probs, dyear, probs2] = get_Detection2(process, drift, thresholds, q)
 
-true_detect  = zeros([1 length(thresholds)]);
-false_detect = zeros([1 length(thresholds)]);
-
 N = size(process,2);
 T = size(process,1);
+
+true_detect  = zeros([1 T]);
+false_detect = zeros([1 T]);
+
 
 %process_shift = process;
 for t = 1:T

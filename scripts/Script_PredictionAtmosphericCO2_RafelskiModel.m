@@ -1,7 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%
-%%%%	This script predicts the future atmospheric CO2 using the Rafelski
-%%%%    model.
+%%%%	This script predicts the future atmospheric CO2 from AR5 emission
+%%%%    scenarios using the Rafelski model.
 %%%%
 %%%%    Output: .mat with predicted atmospheric CO2 for BAU and 2deg
 %%%%            emission scenarios

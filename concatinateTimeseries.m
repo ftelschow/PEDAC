@@ -28,10 +28,16 @@ end
 I1 = find(cut_time == DATA1(:,1))-1;
 I2 = find(cut_time == DATA2(:,1));
 
-if strcmp(method,'continuous')
-    DATA2(:,2) = DATA2(:,2) + DATA1(I1,2) - DATA2(I2,2);
+switch method
+    case "direct"
+        catData = [DATA1(1:I1,:); DATA2(I2:end,:)];
+    case "continuous"
+        DATA2(:,2) = DATA2(:,2) + DATA1(I1,2) - DATA2(I2,2);
+        catData = [DATA1(1:I1,:); DATA2(I2:end,:)];
+    case "Hist2000"
+        I1 =  find(DATA1(:,1) == 2000);
+        catData = interpolData( 12, [DATA1(1:I1,:); DATA2(I2:end,:)], "linear" );
 end
-catData = [DATA1(1:I1,:); DATA2(I2:end,:)];
 
 
 

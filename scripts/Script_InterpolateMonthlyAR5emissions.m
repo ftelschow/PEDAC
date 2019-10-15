@@ -28,6 +28,8 @@ gtonC_2_ppmC = 1/2.124; % Quere et al 2017
 % convert C to CO2
 C2CO2       = 44.01/12.011;
 
+methodVec = ["direct" "continuous" "Hist2000"];
+
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%    Read the AR5 data and interplote it to monthly values 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -173,7 +175,7 @@ save( strcat(path_data, 'Emissions_FutureAR5Montly.mat'),...
 load(strcat(path_data, 'Emissions_PastMontly.mat'))
 
 %%%% Plot BAU emission scenario trajectories
-for method = ["direct" "continuous"]
+for method = methodVec
     figure, clf, hold on
     set(gcf, 'Position', [ 300 300 550 450]);
     set(gcf,'PaperPosition', [ 300 300 550 450])
@@ -186,15 +188,15 @@ for method = ["direct" "continuous"]
                                           data_AR5base(:, [1, scenarioNum+1]),...
                                           cut_yearbase(scenarioNum),...
                                           method);
-        plot(data_tmp(:,1), data_tmp(:,2), 'color', BrightCol(7,:))    
+        plot(data_tmp(:,1), data_tmp(:,2)/gtonC_2_ppmC, 'color', BrightCol(7,:))    
     end
-    plot( PastTotalCO2emission(:, 1 ), PastTotalCO2emission(:,2), 'color',...
+    plot( PastTotalCO2emission(:, 1 ), PastTotalCO2emission(:,2)/gtonC_2_ppmC, 'color',...
           BrightCol(5,:), 'LineWidth', 1.5)
 
-    xlim([1763 2102])
+    xlim([1958 2102])
     h = title('AR5 BAU: CO2 emissions'); set(h, 'Interpreter', 'latex');
     h = xlabel('year'); set(h, 'Interpreter', 'latex');
-    h = ylabel('CO2 [ppm]'); set(h, 'Interpreter', 'latex');
+    h = ylabel('CO2 [Gt]'); set(h, 'Interpreter', 'latex');
     set(gca, 'fontsize', 14);
     hold off
 
@@ -207,7 +209,7 @@ print(strcat(path_pics,strcat('Emissions_AR5base_', method,'.png')), '-dpng')
 end
 
 %%%% Plot 2deg emission scenario trajectories
-for method = ["direct" "continuous"]
+for method = methodVec
     figure, clf, hold on
     set(gcf, 'Position', [ 300 300 550 450]);
     set(gcf,'PaperPosition', [ 300 300 550 450])
@@ -220,15 +222,15 @@ for method = ["direct" "continuous"]
                                           data_AR52deg(:, [1, scenarioNum+1]),...
                                           cut_year2deg(scenarioNum),...
                                           method);
-        plot(data_tmp(:,1), data_tmp(:,2), 'color', BrightCol(7,:))    
+        plot(data_tmp(:,1), data_tmp(:,2)/gtonC_2_ppmC, 'color', BrightCol(7,:))    
     end
-    plot( PastTotalCO2emission(:, 1 ), PastTotalCO2emission(:,2), 'color',...
+    plot( PastTotalCO2emission(:, 1 ), PastTotalCO2emission(:,2)/gtonC_2_ppmC, 'color',...
           BrightCol(5,:), 'LineWidth', 1.5)
 
-    xlim([1763 2102])
+    xlim([1958 2102])
     h = title('AR5 2$^\circ$: CO2 emissions'); set(h, 'Interpreter', 'latex');
     h = xlabel('year'); set(h, 'Interpreter', 'latex');
-    h = ylabel('CO2 [ppm]'); set(h, 'Interpreter', 'latex');
+    h = ylabel('CO2 [Gt]'); set(h, 'Interpreter', 'latex');
     set(gca, 'fontsize', 14);
     hold off
 

@@ -28,6 +28,8 @@ for i = 1:length(year)
      if t(i,1) == 0
          r(i,2) = 1;
      elseif t(i,1) <= 2
+         % Why is here the factor (1/0.95873)??? That is not as in Joos
+         % paper
          r(i,2)= (1/0.95873)*(0.12935+0.21898*exp(-t(i,1)/0.034569)+0.17003*exp(-t(i,1)/0.26936)...
              +0.24071*exp(-t(i,1)/0.96083)+0.24093*exp(-t(i,1)/4.9792));
      else

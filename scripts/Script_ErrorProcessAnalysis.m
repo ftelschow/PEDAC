@@ -30,8 +30,11 @@ HeightFig = 450;
 load(strcat(path_data,"dataObservedCO2.mat"))
 clear dpCO2a_obs dtdelpCO2a_obs
 
-
-
+%%%% Constants
+% convert constant from gton to ppm
+gtonC_2_ppm = 1/2.124; % Quere et al 2017
+% convert C to CO2
+C2CO2       = 44.01/12.011;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% Analysis of residuals from Rafelski model fit
@@ -41,7 +44,7 @@ load(strcat(path_data,"Fit_RafelskiModelAtmosphericCO21958_2005.mat"))
 I = find(CO2a(:,1)==1958);
 % monthly imbalance process
 IMBALANCE = CO2a(I:12:end,2) - CO2a_obs(I:12:end,2);
-IMBALANCE = IMBALANCE(1:end-5);
+IMBALANCE = IMBALANCE(1:end-5)/gtonC_2_ppm*C2CO2;
 times     = CO2a(I:12:end-5*12,1);
 
 %%%%%%%%%%%% analyse atmospheric growth rate error process
@@ -229,3 +232,18 @@ hold off
 save(strcat(path_data, 'ErrorProcess_Rafelski_aCO2.mat'), 'stdRes', 'rho' )
 
 clear fig fig_pos h I m m2 p
+
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% Analysis of residuals from Peters model fit
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% load data from Peter's paper as extracted by Armin. According to the
+% article the units are GtCO2/year
+T = readtable(strcat(path_data,'Peters2017_Fig2_past.txt'));
+PetersPast = T.Variables;
+I = find(CO2a(:,1)==PetersPast(1,1));
+PetersGrowth = PetersPast(I:end,3)*gtonC_2_ppm/C2CO2;
+
+IMBALANCE2 = PetersPast(:,[1 3]) - PetersPast(:,2)*gtonC_2_ppm/C2CO2;
+IMBALANCE2 = IMBALANCE(1:end-5);
+times2     = PetersPast(:,1);

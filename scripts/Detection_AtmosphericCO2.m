@@ -17,6 +17,8 @@ path_data = '/home/drtea/Research/Projects/CO2policy/PEDAC/data/';
 addpath '/home/drtea/Research/Projects/Hermite'
 cd(path)
 clear path
+
+
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Load data from preprocessing
 glue = 'cont';

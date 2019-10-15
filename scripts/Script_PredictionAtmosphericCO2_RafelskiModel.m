@@ -24,6 +24,9 @@ C2CO2       = 44.01/12.011;
 % load color data base for plots
 load(strcat(path_data,'colors.mat'))
 
+% methods to be used for emission concationation
+methodVec = ["direct" "continuous" "Hist2000"];
+
 % load the true past emission data. Note it must be in ppm C as input of
 % Rafelski, but it is CO2 right now! 
 load(strcat(path_data, 'Emissions_PastMontly.mat'))
@@ -45,13 +48,17 @@ opt_years = [1958 2005];
 % load fit of Rafelski model from the historical record of atmospheric CO2
 load(strcat(path_data, 'Fit_RafelskiModelAtmosphericCO2', num2str(opt_years(1)),'_',...
       num2str(opt_years(2)),'.mat'))
+  
+% output figure width and height
+WidthFig  = 550;
+HeightFig = 450;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%    Plot the AR5 data emission trajectories and compare to reported
 %%%%    historical emission trajectories 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % loop over different ways to glue past emissions with future emissions
-for method = ["direct" "continuous"]
+for method = methodVec
     %%%% initialize containers for atmospheric CO2 predicted in the different
     % models
     times = 1765:1/12:2100;
@@ -108,12 +115,8 @@ clear tmp Nt CO2a
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%    Plot the predicted atmospheric CO2 records 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% output figure width and height
-WidthFig  = 550;
-HeightFig = 450;
-
 % loop over methods
-for method = ["direct" "continuous"]
+for method = methodVec
     % load the correct atmospheric CO2 data
     load( strcat(path_data, 'AtmosphericCO2_AR5Montly_',method,'.mat'))
     
@@ -172,3 +175,17 @@ for method = ["direct" "continuous"]
     print(strcat(path_pics,strcat('AtmosphericCO2_AR5_2deg_',method,'.png')), '-dpng')
     hold off
 end
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%    Checking Ralph's claim of not being sensitive to parameters
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% Specify the optimisation periods of Rafelski model, which needs to be
+%%%% loaded
+% years used for LSE
+opt_years = [1958 2005];
+
+% load fit of Rafelski model from the historical record of atmospheric CO2
+load(strcat(path_data, 'Fit_RafelskiModelAtmosphericCO2', num2str(opt_years(1)),'_',...
+      num2str(opt_years(2)),'.mat'))
+  
+  

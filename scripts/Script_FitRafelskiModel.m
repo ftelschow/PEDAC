@@ -23,9 +23,9 @@ load(strcat(path_data,'colors.mat'))
 
 %%%% Constants
 % convert constant from gton to ppm
-gtonC_2_ppmC = 1/2.124; % Quere et al 2017
+gtonC_2_ppm = 1/2.124; % Quere et al 2017
 % convert C to CO2
-C2CO2       = 44.01/12.011;
+C2CO2        = 3.664; %44.01/12.011;
 
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -38,32 +38,140 @@ load(strcat(path_data,'dataObservedCO2.mat'));
 clear dpCO2a_obs dtdelpCO2a_obs
 
 % save minimal year in the observation data
-startYear_obs = floor(min(CO2a_obs(:,1)));
+CO2a_obs(:,1) = 1765:1/12:2016;
+
+CO2_obs = readtable(strcat(path_data,'Global_2018_Co2.txt'));
+CO2_obs = table2array(CO2_obs(1:end, [1 5]));
+tmp = 1980:1/12:2019
+CO2_obs(:,1) = tmp(1:end-1);
+
+CO2_obs = readtable(strcat(path_data,'globalCO2a_NOAA.txt'));
+CO2_obs = table2array(CO2_obs(1:end, [1 2]));
+CO2_obs = interpolData( 12, CO2_obs, 'linear');
+
+%CO2_obs = concatinateTimeseries(CO2a_obs, CO2_obs, 1980, 'direct');
+
+figure(1), clf, hold on
+set(gcf, 'Position', [ 300 300 550 450]);
+set(gcf,'PaperPosition', [ 300 300 550 450])
+set(groot, 'defaultAxesTickLabelInterpreter','latex');
+set(groot, 'defaultLegendInterpreter','latex');
+
+% Plot the atmospheric CO2 observations
+plot(CO2_obs(:,1),CO2_obs(:,2), 'color', BrightCol(3,:),...
+      'LineWidth', 1.5, 'LineStyle', "-")
+plot(CO2a_obs(:,1),CO2a_obs(:,2), 'color', BrightCol(4,:),...
+      'LineWidth', 1.5, 'LineStyle', "-")
+xlim([1950, 2020])
+h = title('Mean Atmospheric CO2'); set(h, 'Interpreter', 'latex');
+h = xlabel('year'); set(h, 'Interpreter', 'latex');
+h = ylabel('ppm/year'); set(h, 'Interpreter', 'latex');
+h = legend( 'NOAA global annual mean',...
+            'Old data from 1 year ago',...
+            'location','northwest'); set(h, 'Interpreter', 'latex');
+set(gca, 'fontsize', 14);
+hold off
+  
+set(gcf,'papersize',[12 12])
+fig = gcf;
+fig.PaperPositionMode = 'auto';
+fig_pos = fig.PaperPosition;
+fig.PaperSize = [fig_pos(3) fig_pos(4)];
+print(strcat(path_pics,strcat('Observations_PastAtmosphericCO2_ppm_different_sources.png')),...
+    '-dpng')
 
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% Load past CO2 emissions for land use and fossil fuel and
 %%%% process them to be input into Rafelski model
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Load the emission data files to load and convert to ppm
-FF = csvread(strcat(path_data,'dataFF_Boden_2016.csv'));   % in 10^12C /year (gtC/year) 
-LU = csvread(strcat(path_data,'dataLU_Houghton_2016.csv'));% in 10^12C /year (gtC/year)
+% load global carbonproject data, data in GtC/year
+GCP = readtable(strcat(path_data,'GCP_2018.txt'));
+GCP = GCP.Variables;
+% transform into GtCO2/year
+GCP(:,2:end) = GCP(:,2:end)*gtonC_2_ppm;
 
-% Start emission data from observation data
-FF = FF(FF(:,1)>=startYear_obs,:);
+FFgcp = GCP(:, [1 2]);
+LUgcp = GCP(:, [1 3]);
 
-LU(1,1) = startYear_obs;
+% https://cdiac.ess-dive.lbl.gov/ftp/ndp030/global.1751_2014.ems
+% tC/year
+FFboden2017 = readtable(strcat(path_data,'Boden_2017.txt'));
+FFboden2017 = table2array(FFboden2017(2:end, 1:2));
+FFboden2017(:,2) = FFboden2017(:,2) / 1000*gtonC_2_ppm; % ppm/y
 
-% convert to ppm CO2
-FF(:,2) = FF(:,2)*gtonC_2_ppmC * C2CO2;
-LU(:,2) = LU(:,2)*gtonC_2_ppmC * C2CO2;
+% Load the emission data from Boden 2016 and Houghton 2016 and convert to ppm
+FFboden2016    = csvread(strcat(path_data,'dataFF_Boden_2016.csv'));   % in 10^12C /year (gtC/year) 
+LUhoughton2016 = csvread(strcat(path_data,'dataLU_Houghton_2016.csv'));% in 10^12C /year (gtC/year)
+% convert to ppm
+FFboden2016(:,2)    = FFboden2016(:,2)*gtonC_2_ppm;
+LUhoughton2016(:,2) = LUhoughton2016(:,2)*gtonC_2_ppm;
+
+% houghton all data
+LUhoughton1850 = readtable(strcat(path_data,'Houghtin_v5_FRA2015_netflux_globe.csv'));
+LUhoughton1850 = LUhoughton1850(:,2:3).Variables;
+
+% LUhoughton1850 = readtable(strcat(path_data,'LUflux_1850_2005.txt'));
+% LUhoughton1850 = table2array(LUhoughton1850(1:end, 1:2));
+LUhoughton1850(:,2) = LUhoughton1850(:,2)*gtonC_2_ppm/1e3;
+
+
+figure(1), clf, hold on
+set(gcf, 'Position', [ 300 300 550 450]);
+set(gcf,'PaperPosition', [ 300 300 550 450])
+set(groot, 'defaultAxesTickLabelInterpreter','latex');
+set(groot, 'defaultLegendInterpreter','latex');
+
+% Plot past emissions
+line( FFboden2017(:, 1 ), FFboden2017(:,2), 'color',...
+      BrightCol(5,:), 'LineWidth', 1.5)
+line( FFgcp(:, 1 ), FFgcp(:,2), 'color',...
+      BrightCol(1,:), 'LineWidth', 1.5, 'LineStyle', "--")
+line( FFboden2016(:, 1 ), FFboden2016(:,2), 'color',...
+      BrightCol(2,:), 'LineWidth', 1.5, 'LineStyle', "--")
+
+line( LUgcp(:, 1 ), LUgcp(:,2), 'color', BrightCol(3,:), 'LineWidth', 1.5)
+line( LUhoughton2016(2:end, 1 ), LUhoughton2016(2:end,2), 'color', BrightCol(3,:),...
+      'LineWidth', 1.5, 'LineStyle', ":")
+line( LUhoughton1850(:, 1 ), LUhoughton1850(:,2), 'color', BrightCol(6,:),...
+      'LineWidth', 1.5, 'LineStyle', "- -")
+  
+xlim([1763 2017])
+h = title('Past CO2 Emissions'); set(h, 'Interpreter', 'latex');
+h = xlabel('year'); set(h, 'Interpreter', 'latex');
+h = ylabel('C [ppm/year]'); set(h, 'Interpreter', 'latex');
+h = legend( 'fossil fuel GCP', 'fossil fuel Boden 2016', 'fossil fuel Boden 2017',...
+            'land use GCP (Houghton 2017/Hansis)',...
+            'land use GCP Houghton 2016',...
+            'location','northwest'); set(h, 'Interpreter', 'latex');
+set(gca, 'fontsize', 14);
+hold off
+
+set(gcf,'papersize',[12 12])
+fig = gcf;
+fig.PaperPositionMode = 'auto';
+fig_pos = fig.PaperPosition;
+fig.PaperSize = [fig_pos(3) fig_pos(4)];
+print(strcat(path_pics,strcat('Observations_PastEmissions_ppm_different_sources.png')), '-dpng')
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% Choose the correct input data of emissions an compute total emissions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+FF = interpolData( 12, concatinateTimeseries(FFboden2017, FFgcp, FFgcp(1,1), 'direct'),...
+                    'pchip' );
+
+LU = interpolData( 12, [ [FFboden2017(1,1), 0 ]; LUhoughton1850;...
+                         LUhoughton2016(end,:)], 'linear' );
+
+plot(LU(:,1), LU(:,2))
+
 
 % interpolate land use to yield values between startYear_obs and 1959
 LU = interpolData( 1, LU);
 
 % interpolate land use and ff to a monthly grid
-FF =  interpolData( 12, FF, 'spline');
-LU =  interpolData( 12, LU, 'spline');
+FF  =  FF(1:end-12,:);
+LU  =  interpolData( 12, LU, 'spline');
 
 %%%% Compute past total emissions. Note that Rafelski model is linear in
 %%%% land use and fossil fuel emissions and 
@@ -81,11 +189,17 @@ line( PastTotalCO2emission(:, 1 ), PastTotalCO2emission(:,2), 'color',...
       BrightCol(1,:), 'LineWidth', 1.5)
 line( LU(:, 1 ), LU(:,2), 'color', BrightCol(3,:), 'LineWidth', 1.5)
 line( FF(:, 1 ), FF(:,2), 'color', BrightCol(5,:), 'LineWidth', 1.5)
+% line( GCP(:, 1 ), GCP(:,2) + GCP(:,3), 'color',...
+%       BrightCol(4,:), 'LineWidth', 1.5)
+% line( GCP(:, 1 ), GCP(:,2), 'color',...
+%       BrightCol(6,:), 'LineWidth', 1.5)
+% line( GCP(:, 1 ), GCP(:,3), 'color',...
+%       BrightCol(6,:), 'LineWidth', 1.5)
   
-xlim([1763 2017])
+xlim([LU(1, 1 ) 2017])
 h = title('Past CO2 Emissions'); set(h, 'Interpreter', 'latex');
 h = xlabel('year'); set(h, 'Interpreter', 'latex');
-h = ylabel('CO2 [Gt CO2/year]'); set(h, 'Interpreter', 'latex');
+h = ylabel('C [ppm/year]'); set(h, 'Interpreter', 'latex');
 h = legend('past total CO2',...
        'CO2 from land use',...
        'CO2 from fossil fuel','location','northwest'); set(h, 'Interpreter', 'latex');
@@ -111,7 +225,6 @@ save( strcat(path_data, 'Emissions_PastMontly.mat'), 'PastTotalCO2emission')
 % find data until 2005, it seems to be assumed in the Rafelski model that
 % the emissions are in carbon and the atmospheric CO2 is in CO2.
 PastTotalCemission = PastTotalCO2emission;
-PastTotalCemission(:,2) = PastTotalCO2emission(:,2) ./ C2CO2;
 
 % start and end year for the period we want to optimize the LS fit for
 opt_years = [1958 2005];
@@ -123,13 +236,13 @@ minLoss = @(x) LSE_Params( x, PastTotalCemission, CO2a_obs, opt_years(1), opt_ye
 minLoss([278  0.85])
 
 % optimize parameters
-%[xopt, fval, exitflag] = fminsearch(minLoss, [278 0.85]);
+[xopt, fval, exitflag] = fminsearch(minLoss, [278 0.85]);
 
 % xopt  = [285.1693    0.8047];  % loss minimized 1958-2016
 % xopt1 = [284.1945    0.7647];  % loss minimized 1765-2016
 
-xopt  = [284.2729    0.7760];  % loss minimized 1958-2005
-xopt1 = [283.9875    0.7356];  % loss minimized 1765-2005
+xopt = [ 277.2731 0.7591];  % loss minimized 1958-2005
+xopt1  = [279.8667 0.7948];  % loss minimized 1765-2005
 
 % Loss after minimisation
 minLoss(xopt)
@@ -142,7 +255,8 @@ CO2a2 = JoosModelFix( PastTotalCemission, xopt1 );
 
 % save the fitted past atmospheric CO2
 save( strcat(path_data, 'Fit_RafelskiModelAtmosphericCO2', num2str(opt_years(1)),'_',...
-      num2str(opt_years(2)),'.mat'), 'CO2a', 'xopt')
+      num2str(opt_years(2)),'.mat'), 'CO2a', 'xopt', 'fas', 'ffer', 'Aoc', 'dtdelpCO2a',...
+      'PastTotalCO2emission')
 
 clear minLoss ans
 

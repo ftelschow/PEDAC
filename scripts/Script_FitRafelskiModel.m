@@ -42,7 +42,7 @@ CO2a_obs(:,1) = 1765:1/12:2016;
 
 CO2_obs = readtable(strcat(path_data,'Global_2018_Co2.txt'));
 CO2_obs = table2array(CO2_obs(1:end, [1 5]));
-tmp = 1980:1/12:2019
+tmp = 1980:1/12:2019;
 CO2_obs(:,1) = tmp(1:end-1);
 
 CO2_obs = readtable(strcat(path_data,'globalCO2a_NOAA.txt'));
@@ -143,6 +143,7 @@ h = ylabel('C [ppm/year]'); set(h, 'Interpreter', 'latex');
 h = legend( 'fossil fuel GCP', 'fossil fuel Boden 2016', 'fossil fuel Boden 2017',...
             'land use GCP (Houghton 2017/Hansis)',...
             'land use GCP Houghton 2016',...
+            'land use GCP Houghton from 1850',...
             'location','northwest'); set(h, 'Interpreter', 'latex');
 set(gca, 'fontsize', 14);
 hold off
@@ -157,8 +158,8 @@ print(strcat(path_pics,strcat('Observations_PastEmissions_ppm_different_sources.
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% Choose the correct input data of emissions an compute total emissions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-FF = interpolData( 12, concatinateTimeseries(FFboden2017, FFgcp, FFgcp(1,1), 'direct'),...
-                    'pchip' );
+FF = interpolData( 12, concatinateTimeseries(FFboden2017, FFgcp, FFgcp(1,1),...
+                   'direct'), 'pchip' );
 
 LU = interpolData( 12, [ [FFboden2017(1,1), 0 ]; LUhoughton1850;...
                          LUhoughton2016(end,:)], 'linear' );
@@ -221,37 +222,32 @@ save( strcat(path_data, 'Emissions_PastMontly.mat'), 'PastTotalCO2emission')
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%  Fit optimal parameters for Rafelski Model by least squares
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Define the loss function depending on the real observed atmospheric CO2
-% find data until 2005, it seems to be assumed in the Rafelski model that
-% the emissions are in carbon and the atmospheric CO2 is in CO2.
-PastTotalCemission = PastTotalCO2emission;
-
 % start and end year for the period we want to optimize the LS fit for
-opt_years = [1958 2005];
+opt_years = [1765 2016];
 
 % define the loss function for optimization
-minLoss = @(x) LSE_Params( x, PastTotalCemission, CO2a_obs, opt_years(1), opt_years(2) );
+minLoss = @(x) LSE_Params( x, PastTotalCO2emission, CO2a_obs, opt_years(1), opt_years(2) );
 
 % value of minLoss for starting parameters
 minLoss([278  0.85])
 
 % optimize parameters
-[xopt, fval, exitflag] = fminsearch(minLoss, [278 0.85]);
+%[xopt, fval, exitflag] = fminsearch(minLoss, [278 0.85]);
 
-% xopt  = [285.1693    0.8047];  % loss minimized 1958-2016
-% xopt1 = [284.1945    0.7647];  % loss minimized 1765-2016
+xopt  = [279.9530    0.8027];  % loss minimized 1958-2016
+xopt1 = [278.3578    0.7851];  % loss minimized 1765-2016
 
-xopt = [ 277.2731 0.7591];  % loss minimized 1958-2005
-xopt1  = [279.8667 0.7948];  % loss minimized 1765-2005
+% xopt = [ 277.2731 0.7591];  % loss minimized 1958-2005
+% xopt1  = [279.8667 0.7948];  % loss minimized 1765-2005
 
 % Loss after minimisation
 minLoss(xopt)
 minLoss(xopt1)
 
 % Check that the optimal fit makes sense, up to 2004
-[CO2a, ~, fas, ffer, Aoc, dtdelpCO2a] = JoosModelFix( PastTotalCemission, xopt );
+[CO2a, ~, fas, ffer, Aoc, dtdelpCO2a] = JoosModelFix( PastTotalCO2emission, xopt );
 % Check that the optimal fit makes sense, up to 2016
-CO2a2 = JoosModelFix( PastTotalCemission, xopt1 );
+CO2a2 = JoosModelFix( PastTotalCO2emission, xopt1 );
 
 % save the fitted past atmospheric CO2
 save( strcat(path_data, 'Fit_RafelskiModelAtmosphericCO2', num2str(opt_years(1)),'_',...
@@ -273,9 +269,11 @@ set(groot, 'defaultLegendInterpreter','latex');
 line(CO2a(:,1),CO2a(:,2), 'Color', colMat(4,:), 'LineWidth',2);
 line(CO2a2(:,1),CO2a2(:,2), 'Color', BrightCol(4,:), 'LineWidth',2);
 line(CO2a_obs(:,1),CO2a_obs(:,2), 'Color', colMat(1,:), 'LineWidth',2);
+line(CO2_obs(:,1),CO2_obs(:,2), 'Color', colMat(1,:), 'LineWidth',2, 'LineStyle', '--');
 
 % define axis and labels
 ylim([260 450])
+xlim([1765, 2020])
 h = legend( 'fit optimised from 1958',...
             'fit optimised from 1765',...
             'observations','location','northwest'); set(h, 'Interpreter', 'latex');
@@ -313,7 +311,7 @@ h = xlabel('year');  set(h, 'Interpreter', 'latex');
 h = title('Sources and Sinks');  set(h, 'Interpreter', 'latex');
 set(gca, 'fontsize', 14);
 grid on
-
+xlim([1765, 2020])
 % print options
 set(gcf,'papersize',[12 12])
 fig = gcf;

@@ -38,7 +38,7 @@ AR52deg_data = csvread(strcat(path_data,'ar5_2deg_world_cO2_modFT.csv'),1,5);
 % amount of different scenarios
 N2deg =  size(AR52deg_data,1);
 % convert to ppm in C
-AR52deg_data = AR52deg_data / 10^3 * gtonC_2_ppmC;
+AR52deg_data = AR52deg_data / 10^3 * gtonC_2_ppmC / C2CO2;
     
 % data is given in 5 year intervals starting 2005 and ending 2100, put this
 % as the first entry in the AR52deg_data matrix. Note that some scenarios
@@ -78,7 +78,7 @@ end
 AR5base_data = csvread(strcat(path_data,'ar5_baseline_world_cO2.csv'),1,5);
 Nbase =  size(AR5base_data,1);
 % convert to ppm in C
-AR5base_data = AR5base_data / 10^3 * gtonC_2_ppmC;
+AR5base_data = AR5base_data / 10^3 * gtonC_2_ppmC / C2CO2;
 
 % data is given in 5 year intervals starting 2005 and ending 2100, put this
 % as the first entry in the AR52deg_data matrix. Note that some scenarios
@@ -196,7 +196,7 @@ for method = methodVec
     xlim([1958 2102])
     h = title('AR5 BAU: CO2 emissions'); set(h, 'Interpreter', 'latex');
     h = xlabel('year'); set(h, 'Interpreter', 'latex');
-    h = ylabel('CO2 [Gt]'); set(h, 'Interpreter', 'latex');
+    h = ylabel('ppm'); set(h, 'Interpreter', 'latex');
     set(gca, 'fontsize', 14);
     hold off
 
@@ -230,7 +230,7 @@ for method = methodVec
     xlim([1958 2102])
     h = title('AR5 2$^\circ$: CO2 emissions'); set(h, 'Interpreter', 'latex');
     h = xlabel('year'); set(h, 'Interpreter', 'latex');
-    h = ylabel('CO2 [Gt]'); set(h, 'Interpreter', 'latex');
+    h = ylabel('ppm'); set(h, 'Interpreter', 'latex');
     set(gca, 'fontsize', 14);
     hold off
 
@@ -243,3 +243,35 @@ print(strcat(path_pics,strcat('Emissions_AR52deg_', method,'.png')), '-dpng')
 end
 
 clear h fig fig_pos
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%    Compare starting points of AR5 models
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+start_year_difference = NaN*zeros([1 N2deg]);
+
+for scn = 1:N2deg
+       I = find(~isnan(data_AR52deg(:,scn+1)));
+       start_year_difference(scn) = data_AR52deg(I(1),scn+1) - ...
+        data_AR5base(I(1),deg_Base_correspondence(scn)+1);
+        
+end
+
+figure(1), clf, hold on
+set(gcf, 'Position', [ 300 300 550 450]);
+set(gcf,'PaperPosition', [ 300 300 550 450])
+set(groot, 'defaultAxesTickLabelInterpreter','latex');
+set(groot, 'defaultLegendInterpreter','latex');
+    scatter(1:147, start_year_difference)
+xlim([0 148])
+h = title('AR5 2$^\circ$ - BAU at first data point'); set(h, 'Interpreter', 'latex');
+h = xlabel('model number'); set(h, 'Interpreter', 'latex');
+h = ylabel('ppm'); set(h, 'Interpreter', 'latex');
+set(gca, 'fontsize', 14);
+hold off
+
+set(gcf,'papersize',[12 12])
+fig = gcf;
+fig.PaperPositionMode = 'auto';
+fig_pos = fig.PaperPosition;
+fig.PaperSize = [fig_pos(3) fig_pos(4)];
+print(strcat(path_pics,strcat('Emissions_AR5_difference_FirstDataPoint.png')), '-dpng')

@@ -19,23 +19,28 @@ if nargin < 4
     method = 'continuous';
 end
 
-% check that cut_year is contained in both time series
-if ~any(cut_time == DATA1(:,1)) && ~any(cut_time == DATA2(:,1))
-    error('The cut_year variable must be contained in both DATA1(:,1) and DATA2(:,1)');
+if ~strcmp(method, "interpolation")
+    % check that cut_year is contained in both time series
+    if ~any(cut_time == DATA1(:,1)) && ~any(cut_time == DATA2(:,1))
+        error('The cut_year variable must be contained in both DATA1(:,1) and DATA2(:,1)');
+    end
 end
-
-% cut data1
-I1 = find(cut_time == DATA1(:,1))-1;
-I2 = find(cut_time == DATA2(:,1));
 
 switch method
     case "direct"
+        % cut data1
+        I1 = find(cut_time == DATA1(:,1))-1;
+        I2 = find(cut_time == DATA2(:,1));
         catData = [DATA1(1:I1,:); DATA2(I2:end,:)];
     case "continuous"
+        % cut data1
+        I1 = find(cut_time == DATA1(:,1))-1;
+        I2 = find(cut_time == DATA2(:,1));
         DATA2(:,2) = DATA2(:,2) + DATA1(I1,2) - DATA2(I2,2);
         catData = [DATA1(1:I1,:); DATA2(I2:end,:)];
-    case "Hist2000"
-        I1 =  find(DATA1(:,1) == 2000);
+    case "interpolation"
+        I1 =  find(DATA1(:,1) == cut_time(1));
+        I2 =  find(DATA2(:,1) == cut_time(2));
         catData = interpolData( 12, [DATA1(1:I1,:); DATA2(I2:end,:)], "linear" );
 end
 

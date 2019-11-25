@@ -1,5 +1,5 @@
 % Joos model function
-function [CO2a, data, fas, ffer, Aoc, dtdelpCO2a] = JoosModelFix( data, x )
+function [CO2a, data, fas, ffer, Aoc, dtdelpCO2a] = JoosModel( data, x )
 if length(x)<3
     beta       = 0.287;      % 0.287; % fertilization factor
 else

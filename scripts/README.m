@@ -4,7 +4,7 @@
 %%%%    to use the scripts
 %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% constants for plots script
+%%%% script saving global color schemes and constants for plots
 run("/home/drtea/Research/Projects/CO2policy/PEDAC/scripts/Script_ColorDatabase.m")
 % this will produce matrices with RGB values for nice colors in the figures
 

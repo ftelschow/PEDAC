@@ -21,11 +21,13 @@ clear path
 % convert C to CO2
 C2CO2       = 44.01/12.011;
 
-% load color data base for plots
+%%%% load color data base for plots
 load(strcat(path_data,'colors.mat'))
+% choose main color scheme for this script 
+ColScheme  = Categories;
 
 % methods to be used for emission concationation
-methodVec = ["direct" "interpolation"];
+methodVec = ["direct", "interpolation"];
 
 % load the true past emission data. Note it must be in ppm C as input of
 % Rafelski! 
@@ -42,8 +44,14 @@ load( strcat(path_data, 'Emissions_IIASA_FutureMontly.mat'))
 opt_years = [1765 2016];
 
 % load fit of Rafelski model from the historical record of atmospheric CO2
-load(strcat(path_data, 'Fit_RafelskiModelAtmosphericCO2', num2str(opt_years(1)),'_',...
-      num2str(opt_years(2)),'.mat'))
+%load(strcat(path_data, 'Fit_RafelskiModelAtmosphericCO2', num2str(opt_years(1)),'_',...
+%      num2str(opt_years(2)),'.mat'))
+load( strcat(path_data, 'Fit_RafelskiModelAtmosphericCO2Final.mat'), 'xoptAll', 'xoptNew',...
+      'PastTotalCO2emission')
+  
+xopt = xoptNew;
+
+clear ffer fas dtdelpCO2a Aoc
   
 % output figure width and height
 WidthFig  = 550;
@@ -60,22 +68,19 @@ for method = methodVec
     times = PastTotalCO2emission(1,1):1/12:2100;
     Nt    = length(times);
 
-    COa_base      = zeros([Nt size(data_IISAbau,2)])*NaN;
-    COa_base(:,1) = times;
+    COa_bau      = zeros([Nt size(data_bau,2)])*NaN;
+    COa_bau(:,1) = times;
 
-    COa_1deg      = zeros([Nt size(data_IISA1deg,2)])*NaN;
-    COa_1deg(:,1) = times;    
-    
-    COa_2deg      = zeros([Nt size(data_IISA2deg,2)])*NaN;
-    COa_2deg(:,1) = times;
+    COa_alt      = zeros([Nt size(data_alt,2)])*NaN;
+    COa_alt(:,1) = times;    
 
     %%%% use Rafelski model to get the COa curves for BAU scenarios
-    for scn = 2:size(data_IISAbau,2)
+    for scn = 2:size(data_bau,2)
         if ~strcmp(method, "interpolation")
-            cyear = cut_yearbau(scn-1);
+            cyear = start_year_bau(scn-1);
         else
-            if cut_yearbau(scn-1)~=2010
-                cyear = [cut_yearbau(scn-1)-5 cut_yearbau(scn-1)];
+            if start_year_bau(scn-1)~=2010
+                cyear = [start_year_bau(scn-1)-5 start_year_bau(scn-1)];
             else
                 cyear = [2009 2010];
             end
@@ -83,7 +88,7 @@ for method = methodVec
         % concatenate past and future emissions to yield a full world
         % future history
         tmp = concatinateTimeseries( PastTotalCO2emission,...
-                                     data_IISAbau(:,[1 scn]),...
+                                     data_bau(:,[1 scn]),...
                                      cyear,...
                                      method);
         % remove NaNs. This is neccessary since the Rafelski model somehow
@@ -91,16 +96,16 @@ for method = methodVec
         tmp = tmp(~isnan(tmp(:,2)),:);
         % predict atmospheric CO2 using rafelski model
         tmp = JoosModelFix( tmp, xopt );
-        COa_base(1:size(tmp,1),scn) = tmp(:,2);
+        COa_bau(1:size(tmp,1),scn) = tmp(:,2);
     end
     
     %%%% use Rafelski model to get the COa curves for 2° scenarios
-    for scn = 2:size(data_IISA1deg,2)
+    for scn = 2:size(data_alt,2)
         if ~strcmp(method, "interpolation")
-            cyear = cut_year1deg(scn-1);
+            cyear = start_year_alt(scn-1);
         else
-            if cut_year1deg(scn-1)~=2010
-                cyear = [cut_year1deg(scn-1)-5 cut_year1deg(scn-1)];
+            if start_year_alt(scn-1)~=2010
+                cyear = [start_year_alt(scn-1)-5 start_year_alt(scn-1)];
             else
                 cyear = [2009 2010];
             end
@@ -108,42 +113,22 @@ for method = methodVec
         % concatenate past and future emissions to yield a full world
         % future history
         tmp = concatinateTimeseries( PastTotalCO2emission,...
-                                     data_IISA1deg(:,[1 scn]),...
+                                     data_alt(:,[1 scn]),...
                                      cyear,...
                                      method);
 
         % predict atmospheric CO2 using rafelski model
         tmp = JoosModelFix( tmp, xopt );
-        COa_1deg(1:size(tmp,1),scn) = tmp(:,2);
+        COa_alt(1:size(tmp,1),scn) = tmp(:,2);
     end
     
-    %%%% use Rafelski model to get the COa curves for 2° scenarios
-    for scn = 2:size(data_IISA2deg,2)
-        if ~strcmp(method, "interpolation")
-            cyear = cut_year2deg(scn-1);
-        else
-            if cut_year2deg(scn-1)~=2010
-                cyear = [cut_year2deg(scn-1)-5 cut_year2deg(scn-1)];
-            else
-                cyear = [2009 2010];
-            end
-        end
-        % concatenate past and future emissions to yield a full world
-        % future history
-        tmp = concatinateTimeseries( PastTotalCO2emission,...
-                                     data_IISA2deg(:,[1 scn]),...
-                                     cyear,...
-                                     method);
-
-        % predict atmospheric CO2 using rafelski model
-        tmp = JoosModelFix( tmp, xopt );
-        COa_2deg(1:size(tmp,1),scn) = tmp(:,2);
-    end
     %%%% produce output .mat
-    save( strcat(path_data, 'AtmosphericCO2_IISAMontly_',method,'.mat'),...
-                            'COa_base', 'COa_2deg', 'COa_1deg',...
-                            'cut_yearbau', 'cut_year2deg', 'cut_year1deg',...
-                            'corBAU_1P5', 'corBAU_2', 'category_1P5', 'category_2')
+    save( strcat(path_data, 'AtmosphericCO2_IISA_',method,'.mat'),...
+                            'COa_bau', 'COa_alt',...
+                            'start_year_bau', 'start_year_alt',...
+                            'corBAU', 'sub_category', 'category',...
+                            'category_a', 'names_category', 'names_sub_category',...
+                            'namesAlt', 'namesBAU', 'Nbau', 'Nalt', 'detectStart')
 end
 
 % Clear workspace
@@ -156,7 +141,7 @@ close all
 % loop over methods
 for method = methodVec
     % load the correct atmospheric CO2 data
-    load( strcat(path_data, 'AtmosphericCO2_IISAMontly_',method,'.mat'))
+    load( strcat(path_data, 'AtmosphericCO2_IISA_',method,'.mat'))
     
     % plot all the BAU scenarios
     figure(1), clf, hold on
@@ -165,9 +150,9 @@ for method = methodVec
     set(groot, 'defaultAxesTickLabelInterpreter','latex');
     set(groot, 'defaultLegendInterpreter','latex');
     % plot the actual curves
-    for scn = 2:size(COa_base,2)
-        plot(COa_base(:, 1 ), COa_base(:, scn ),...
-                  'LineWidth', 1.5)
+    for scn = 2:size(COa_bau,2)
+        plot(COa_bau(:, 1 ), COa_bau(:, scn ),...
+                  'LineWidth', 1.5, 'Color', Categories(7,:))
     end
     xlim([2000 2102])
     ylim([250 1150])
@@ -183,7 +168,7 @@ for method = methodVec
     fig.PaperPositionMode = 'auto';
     fig_pos = fig.PaperPosition;
     fig.PaperSize = [fig_pos(3) fig_pos(4)];
-    print(strcat(path_pics,strcat('AtmosphericCO2_IISA_base_',method,'.png')), '-dpng')
+    print(strcat(path_pics,strcat('AtmosphericCO2_IISA_bau_',method,'.png')), '-dpng')
     hold off
 
     sty = ["-.", "-.", "-", "--", "-", "--"];
@@ -195,18 +180,30 @@ for method = methodVec
     set(groot, 'defaultAxesTickLabelInterpreter','latex');
     set(groot, 'defaultLegendInterpreter','latex');
 
-    for scn = 2:size(COa_2deg,2)
-        if ~isnan(category_2(scn-1))
-            plot( COa_2deg( :, 1 ), COa_2deg( :, scn ),...
-                  'Color',  BrightCol(category_2(scn-1),:),...
+    for scn = 2:size(COa_alt,2)
+            if strcmp( names_category(1), category(scn-1) )
+                colo = Categories(1,:);
+            elseif strcmp( names_category(2), category(scn-1) )
+                colo = Categories(2,:);
+            elseif strcmp( names_category(3), category(scn-1) )
+                colo = Categories(3,:);
+            elseif strcmp( names_category(4), category(scn-1) )
+                colo = Categories(4,:);
+            elseif strcmp( names_category(5), category(scn-1) )
+                colo = Categories(5,:);
+            elseif strcmp( names_category(6), category(scn-1) )
+                colo = Categories(6,:);
+            end
+                
+            plot( COa_alt( :, 1 ), COa_alt( :, scn ),...
+                  'Color',  colo,...
                   'LineStyle', "-",...
                   'LineWidth', 1.5)
-        end
     end
     line([2005 2005],[-10, 1e4],'Color','black','LineStyle','--')
     xlim([2000 2102])
     ylim([250 550])
-    h = title('Predictions for atmospheric CO2 for 2$^\circ$ scenarios');  set(h, 'Interpreter', 'latex');
+    h = title('Predictions for atmospheric CO2 for alternative scenarios');  set(h, 'Interpreter', 'latex');
     h = xlabel('years');  set(h, 'Interpreter', 'latex');
     h = ylabel('C02 [ppm]');  set(h, 'Interpreter', 'latex');
     grid
@@ -217,31 +214,66 @@ for method = methodVec
     fig.PaperPositionMode = 'auto';
     fig_pos = fig.PaperPosition;
     fig.PaperSize = [fig_pos(3) fig_pos(4)];
-    print(strcat(path_pics,strcat('AtmosphericCO2_IISA_2deg_',method,'.png')), '-dpng')
+    print(strcat(path_pics,strcat('AtmosphericCO2_IISA_alternative_',method,'.png')), '-dpng')
     hold off
-    
-    
-    % plot all the 1.5° scenarios
-    figure(3), clf, hold on
+end
+ 
+close all
+%%
+
+% loop over methods
+method = methodVec(2);
+for cat = [2 3]
+    % load the correct atmospheric CO2 data
+    load( strcat(path_data, 'AtmosphericCO2_IISA_',method,'.mat'))
+
+    % plot all the 2° scenarios 1.5°C high overshoot
+    figure(2), clf, hold on
     set(gcf, 'Position', [ 300 300 WidthFig HeightFig]);
     set(gcf,'PaperPosition', [ 300 300 WidthFig HeightFig])
     set(groot, 'defaultAxesTickLabelInterpreter','latex');
     set(groot, 'defaultLegendInterpreter','latex');
 
-    for scn = 2:size(COa_1deg,2)
-        if ~isnan(category_1P5(scn-1))
-            plot( COa_1deg( :, 1 ), COa_1deg( :, scn ),...
-                  'Color',  BrightCol(category_1P5(scn-1),:),...
-                  'LineStyle', "-",...
-                  'LineWidth', 1.5)
-        end
+    for scn = 2:size(COa_alt,2)
+            if strcmp( names_category(1), category(scn-1) )
+                colo = Categories(1,:);
+            elseif strcmp( names_category(2), category(scn-1) )
+                colo = Categories(2,:);
+                ll   = '-';
+            elseif strcmp( names_category(3), category(scn-1) )
+                colo = Categories(3,:);
+                ll   = '-';
+            elseif strcmp( names_category(4), category(scn-1) )
+                colo = Categories(4,:);
+                ll   = '--';
+            elseif strcmp( names_category(5), category(scn-1) )
+                colo = Categories(5,:);
+            elseif strcmp( names_category(6), category(scn-1) )
+                colo = Categories(6,:);
+            end
+            plot( [-20 20], [-100, -100], 'Color', Categories(cat,:) );
+            plot( [-20 20], [-100, -100], 'Color', Categories(4,:),...
+                  'LineStyle', '--' );
+            
+            if strcmp( names_category(cat), category(scn-1) ) || ...
+                    strcmp( names_category(4), category(scn-1) )
+                plot( COa_alt( :, 1 ), COa_alt( :, scn ),...
+                      'Color',  colo,...
+                      'LineStyle', ll,...
+                      'LineWidth', 1.5)
+            end
     end
-    line([2005 2005],[-10, 1e4],'Color','black','LineStyle','--')
-    xlim([2000 2102])
+    line([2020 2020],[-10, 1e4],'Color','black','LineStyle','--')
+    line([2035 2035],[-10, 1e4],'Color','black','LineStyle','--')
+    xlim([2000 2070])
     ylim([250 550])
-    h = title('Predictions for atmospheric CO2 for 1.5$^\circ$ scenarios');  set(h, 'Interpreter', 'latex');
+    h = title('Predictions for atmospheric CO2');  set(h, 'Interpreter', 'latex');
     h = xlabel('years');  set(h, 'Interpreter', 'latex');
     h = ylabel('C02 [ppm]');  set(h, 'Interpreter', 'latex');
+    h = legend( names_category(cat),...
+                names_category(4),...
+                'location','southeast');
+    set(h, 'Interpreter', 'latex');
     grid
     set(gca, 'fontsize', 14);
 
@@ -250,20 +282,96 @@ for method = methodVec
     fig.PaperPositionMode = 'auto';
     fig_pos = fig.PaperPosition;
     fig.PaperSize = [fig_pos(3) fig_pos(4)];
-    print(strcat(path_pics,strcat('AtmosphericCO2_IISA_1deg_',method,'.png')), '-dpng')
+    print(strcat(path_pics,strcat('AtmosphericCO2_IISA_',num2str(cat),'_low2C_',method,'.png')), '-dpng')
     hold off
 end
 
-% %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% %%%%    Checking Ralph's claim of not being sensitive to parameters
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% %%%% Specify the optimisation periods of Rafelski model, which needs to be
-% %%%% loaded
-% % years used for LSE
-% opt_years = [1958 2005];
-% 
-% % load fit of Rafelski model from the historical record of atmospheric CO2
-% load(strcat(path_data, 'Fit_RafelskiModelAtmosphericCO2', num2str(opt_years(1)),'_',...
-%       num2str(opt_years(2)),'.mat'))
-%   
-%   
+%%
+% load the correct atmospheric CO2 data
+load( strcat(path_data, 'AtmosphericCO2_IISA_',method,'.mat'))
+
+% plot all the lower 1.5°C low scenarios versus higher 1.5°C low
+figure(2), clf, hold on
+set(gcf, 'Position', [ 300 300 WidthFig HeightFig]);
+set(gcf,'PaperPosition', [ 300 300 WidthFig HeightFig])
+set(groot, 'defaultAxesTickLabelInterpreter','latex');
+set(groot, 'defaultLegendInterpreter','latex');
+
+l15lov = strcmp( names_sub_category(2), sub_category );
+h15lov = strcmp( names_sub_category(3), sub_category );
+
+        plot( [-20 20], [-100, -100], 'Color', Categories(2,:), 'LineWidth', 1.5 );
+        plot( [-20 20], [-100, -100], 'Color', Categories(4,:), 'LineWidth', 1.5 );
+        plot( COa_alt( :, 1 ), COa_alt( :, l15lov ),...
+              'Color',  Categories(2,:),...
+              'LineStyle', ll,...
+              'LineWidth', 1.5)
+        plot( COa_alt( :, 1 ), COa_alt( :, h15lov ),...
+              'Color',  Categories(4,:),...
+              'LineStyle', ll,...
+              'LineWidth', 1.5)
+
+
+line([2020 2020],[-10, 1e4],'Color','black','LineStyle','--')
+line([2035 2035],[-10, 1e4],'Color','black','LineStyle','--')
+xlim([2000 2070])
+ylim([250 550])
+h = title('Predictions for atmospheric CO2');  set(h, 'Interpreter', 'latex');
+h = xlabel('years');  set(h, 'Interpreter', 'latex');
+h = ylabel('C02 [ppm]');  set(h, 'Interpreter', 'latex');
+h = legend( names_sub_category(2),...
+            names_sub_category(3),...
+            'location','southeast');
+set(h, 'Interpreter', 'latex');
+grid
+set(gca, 'fontsize', 14);
+set(gcf,'papersize',[12 12])
+fig = gcf;
+fig.PaperPositionMode = 'auto';
+fig_pos = fig.PaperPosition;
+fig.PaperSize = [fig_pos(3) fig_pos(4)];
+print(strcat(path_pics,strcat('AtmosphericCO2_IISA_l15low_h15low_',method,'.png')), '-dpng')
+hold off
+
+% plot all the lower 1.5°C low scenarios versus higher 1.5°C low
+figure(2), clf, hold on
+set(gcf, 'Position', [ 300 300 WidthFig HeightFig]);
+set(gcf,'PaperPosition', [ 300 300 WidthFig HeightFig])
+set(groot, 'defaultAxesTickLabelInterpreter','latex');
+set(groot, 'defaultLegendInterpreter','latex');
+
+l15lov = strcmp( names_sub_category(4), sub_category );
+h15lov = strcmp( names_sub_category(5), sub_category );
+
+        plot( [-20 20], [-100, -100], 'Color', Categories(2,:), 'LineWidth', 1.5 );
+        plot( [-20 20], [-100, -100], 'Color', Categories(4,:), 'LineWidth', 1.5 );
+        plot( COa_alt( :, 1 ), COa_alt( :, l15lov ),...
+              'Color',  Categories(2,:),...
+              'LineStyle', ll,...
+              'LineWidth', 1.5)
+        plot( COa_alt( :, 1 ), COa_alt( :, h15lov ),...
+              'Color',  Categories(4,:),...
+              'LineStyle', ll,...
+              'LineWidth', 1.5)
+
+
+line([2020 2020],[-10, 1e4],'Color','black','LineStyle','--')
+line([2035 2035],[-10, 1e4],'Color','black','LineStyle','--')
+xlim([2000 2070])
+ylim([250 550])
+h = title('Predictions for atmospheric CO2');  set(h, 'Interpreter', 'latex');
+h = xlabel('years');  set(h, 'Interpreter', 'latex');
+h = ylabel('C02 [ppm]');  set(h, 'Interpreter', 'latex');
+h = legend( names_sub_category(4),...
+            names_sub_category(5),...
+            'location','southeast');
+set(h, 'Interpreter', 'latex');
+grid
+set(gca, 'fontsize', 14);
+set(gcf,'papersize',[12 12])
+fig = gcf;
+fig.PaperPositionMode = 'auto';
+fig_pos = fig.PaperPosition;
+fig.PaperSize = [fig_pos(3) fig_pos(4)];
+print(strcat(path_pics,strcat('AtmosphericCO2_IISA_l15high_h15high_',method,'.png')), '-dpng')
+hold off

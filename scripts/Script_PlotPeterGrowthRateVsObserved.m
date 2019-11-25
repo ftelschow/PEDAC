@@ -69,6 +69,16 @@ year_e = 2005; % end year used in optimization
 
 load(strcat(path_data, 'Fit_RafelskiModelAtmosphericCO2', num2str(year_s),'_',...
       num2str(year_e),'.mat'))
+  
+% data given by Julia Pongratz for land net flux
+LUPongratz = readtable(strcat(path_data,'Pongratz_GCP2019.txt'));
+LUPongratz = LUPongratz(:,[1 6]).Variables;
+LUPongratz(:,2) = LUPongratz(:,2)*gtonC_2_ppm* C2CO2;
+
+
+GCP_historical = readtable(strcat(path_data,'GCP_historical.csv'));
+GCP_historical = GCP_historical(:,1:end-1).Variables;
+GCP_historical(:,2:end) = GCP_historical(:,2:end)* C2CO2;
 
 %%%% Get annual growth rate from the model fit
 % get annual values by choosing january measurement. The data is anyhow an
@@ -107,6 +117,8 @@ plot( GCP(:,1), (GCP(:,2) + GCP(:,3) - GCP(:,5) - GCP(:,6)),...
       'LineWidth', 1.5, 'Color', BrightCol(5,:) )
 plot( dtdelpCO2a(:,1), dtdelpCO2a(:,2) / gtonC_2_ppm*C2CO2,...
       'LineWidth', 2.5, 'Color', BrightCol(6,:), 'LineStyle', '--' )
+plot( GCP_historical(:,1), (GCP_historical(:,2) + GCP_historical(:,3) - GCP_historical(:,5) - GCP_historical(:,6)),...
+      'LineWidth', 1.5, 'Color', BrightCol(7,:) )
 
 xlim([PetersPast(1,1) PetersPast(end,1)])
 

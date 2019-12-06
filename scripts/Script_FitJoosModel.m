@@ -3,7 +3,9 @@
 %%%%    This file fits the Joos model to observed atmospheric CO2
 %%%%    data.
 %%%%
-%%%%    Output: .mat file containing optimised parameters and predicted
+%%%%    Output: .mat containing the past total emissions interpolated to
+%%%%            monthly resolution
+%%%%            .mat file containing optimised parameters and predicted
 %%%%            CO2 for the historical record
 %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

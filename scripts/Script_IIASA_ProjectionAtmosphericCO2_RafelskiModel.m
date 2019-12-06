@@ -19,35 +19,35 @@ cd(path)
 clear path
 
 % convert C to CO2
-C2CO2       = 44.01/12.011;
+C2CO2       = 44.01 / 12.011;
 
 %%%% load color data base for plots
-load(strcat(path_data,'colors.mat'))
+load( strcat( path_data, 'colors.mat' ) )
 % choose main color scheme for this script 
 ColScheme  = Categories;
 
 % methods to be used for emission concationation
-methodVec = ["direct", "interpolation"];
+methodVec = [ "direct", "interpolation" ];
 
 % load the true past emission data. Note it must be in ppm C as input of
 % Rafelski! 
-load(strcat(path_data, 'Emissions_PastMontly.mat'))
+load( strcat( path_data, 'Emissions_PastMontly.mat' ) )
 
 % load the predicted future emission data . Note it must be in ppm C as input of
 % Rafelski, but it is CO2 right now!  
-load( strcat(path_data, 'Emissions_IIASA_FutureMontly.mat'))
+load( strcat( path_data, 'Emissions_IIASA_FutureMontly.mat' ) )
 
 
 %%%% Specify the optimisation periods of Rafelski model, which needs to be
 %%%% loaded
 % years used for LSE
-opt_years = [1765 2016];
+opt_years = [ 1765 2016 ];
 
 % load fit of Rafelski model from the historical record of atmospheric CO2
 %load(strcat(path_data, 'Fit_RafelskiModelAtmosphericCO2', num2str(opt_years(1)),'_',...
 %      num2str(opt_years(2)),'.mat'))
-load( strcat(path_data, 'Fit_RafelskiModelAtmosphericCO2Final.mat'), 'xoptAll', 'xoptNew',...
-      'PastTotalCO2emission')
+load( strcat( path_data, 'Fit_RafelskiModelAtmosphericCO2Final.mat' ),...
+                         'xoptAll', 'xoptNew', 'PastTotalCO2emission' )
   
 xopt = xoptNew;
 
@@ -65,38 +65,39 @@ HeightFig = 450;
 for method = methodVec
     %%%% initialize containers for atmospheric CO2 predicted in the different
     % models
-    times = PastTotalCO2emission(1,1):1/12:2100;
-    Nt    = length(times);
+    times = PastTotalCO2emission( 1, 1 ) : 1/12 : 2100;
+    Nt    = length( times );
 
-    COa_bau      = zeros([Nt size(data_bau,2)])*NaN;
+    COa_bau      = zeros( [ Nt size( data_bau, 2 ) ] ) * NaN;
     COa_bau(:,1) = times;
 
-    COa_alt      = zeros([Nt size(data_alt,2)])*NaN;
+    COa_alt      = zeros( [ Nt size( data_alt, 2 ) ] ) * NaN;
     COa_alt(:,1) = times;    
 
     %%%% use Rafelski model to get the COa curves for BAU scenarios
-    for scn = 2:size(data_bau,2)
-        if ~strcmp(method, "interpolation")
-            cyear = start_year_bau(scn-1);
+    for scn = 2 : size( data_bau, 2 )
+        if ~strcmp( method, "interpolation" )
+            cyear = start_year_bau( scn - 1 );
         else
-            if start_year_bau(scn-1)~=2010
-                cyear = [start_year_bau(scn-1)-5 start_year_bau(scn-1)];
+            if start_year_bau( scn - 1 ) ~= 2010
+                cyear = [ start_year_bau( scn - 1 ) - 5 ...
+                          start_year_bau( scn - 1 ) ];
             else
-                cyear = [2009 2010];
+                cyear = [ 2009 2010 ];
             end
         end
         % concatenate past and future emissions to yield a full world
         % future history
         tmp = concatinateTimeseries( PastTotalCO2emission,...
-                                     data_bau(:,[1 scn]),...
+                                     data_bau( :, [ 1 scn ] ),...
                                      cyear,...
-                                     method);
+                                     method );
         % remove NaNs. This is neccessary since the Rafelski model somehow
         % predicts to far... (ask Ralph about it. Is it a bug?)
-        tmp = tmp(~isnan(tmp(:,2)),:);
+        tmp = tmp( ~isnan( tmp( :, 2 ) ), : );
         % predict atmospheric CO2 using rafelski model
         tmp = JoosModelFix( tmp, xopt );
-        COa_bau(1:size(tmp,1),scn) = tmp(:,2);
+        COa_bau( 1:size( tmp, 1), scn ) = tmp( :, 2 );
     end
     
     %%%% use Rafelski model to get the COa curves for 2° scenarios

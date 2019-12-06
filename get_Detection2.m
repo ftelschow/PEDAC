@@ -1,5 +1,5 @@
 function [probs, dyear, probs2] = get_Detection2(process, drift, thresholds, q)
-
+% new method output is 95% quantile
 N = size(process,2);
 T = size(process,1);
 

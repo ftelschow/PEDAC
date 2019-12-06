@@ -1,34 +1,40 @@
-function [threshold, dyear, probs] = get_Detection(process, drift, thresholds, q)
+function detect = get_Detection( error_process, drift, thresholds,...
+                                      ptwise )
 
-ind_95 = zeros([1 length(thresholds)]);
-d_5    = zeros([1 length(thresholds)]);
+if nargin < 4
+    ptwise = 0;
+end
+                                  
+N = size( error_process, 2 );
+T = size( error_process, 1 );
 
-PT_baseOpt  = [];
-PT_alterOpt = [];
-Iopt        = 0;
-d_5Opt      = Inf;
-
-for i = 1:length(thresholds)
-  [PT_base, PT_alter] = get_futureDetectProb(process, drift, thresholds(i));
-  [~, I]    = min(abs(PT_alter - (1-q)));
-  ind_95(i) = I;
-  d_5(i)    = abs(PT_base(I) - q);
-  if d_5Opt >= d_5(i)
-      PT_baseOpt  = PT_base;
-      PT_alterOpt = PT_alter;
-      Iopt        = I;
-      d_5Opt      = d_5(i);
-      iOpt        = i;
-  end
+if all( size( thresholds ) == [ 1 1 ] )
+    thresholds = repmat( thresholds, [ 1 T ] );
+elseif all( size( thresholds ) ~= [ 1 T ] )
+    error( "thresholds need to be either a numeric of a vector of size [1 T]." )
 end
 
-probs     = [PT_baseOpt, PT_alterOpt];
-threshold = thresholds(iOpt);
-dyear     = Iopt;
+detect  = NaN * zeros( [ 1 T ] );
 
+process_shift = error_process + drift( :, 2 ) - drift( :, 1 );
 
-% figure(1), clf, hold on
-% plot( process(:, 1:2000) + drift(2,:)'-drift(1,:)')
-% plot( 1:size(process,1), repmat(threshold, [1, size(process,1)]), 'LineWidth', 2)
-% plot( drift(2,:)'-drift(1,:)')
-% hold off
+% save already detected processes
+detected_past = false( [ 1 N ] );
+
+for t = 1:T
+    if t == 1
+        mProc = process_shift( 1, : );
+    else
+        mProc = min( process_shift( 1:t, : ) );
+    end
+    
+    if ptwise
+        tmp_detect = ( mProc < thresholds( t ) );
+    else
+        tmp_detect = ( mProc < thresholds( t ) ) | detected_past;
+        % update already detected processes
+        detected_past = detected_past | tmp_detect;
+    end
+    
+    detect( t ) = sum( tmp_detect ) / N;
+end

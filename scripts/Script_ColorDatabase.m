@@ -1,7 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%
 %%%%	This script produces a color data base for color blind and grey
-%%%%    scale compatible figures
+%%%%    scale compatible figures, which is used in the plots.
 %%%%
 %%%%    Output: colors.mat
 %%%%

@@ -14,7 +14,7 @@ C2CO2 = 3.664
 # read data from global carbon project
 # Le Quéré et al: Global Carbon Budget 2018, Earth Syst. Sci. Data, 2018b.
 #                 https://doi.org/10.5194/essd-10-2141-2018
-GCP <- read.csv(file="data/GCP_recent.csv", header=TRUE, sep=",")
+GCP <- read.csv(file="data/Misc/GCP2018_recent_sheet.csv", header=TRUE, sep=",")
 
 
 

@@ -32,6 +32,7 @@ methodVec = [ "direct", "interpolation" ];
 % load the true past emission data. Note it must be in ppm C as input of
 % Rafelski! 
 load( strcat( path_data, 'Emissions_PastMontly.mat' ) )
+PastTotalCO2emission = PastTotalCO2emissionScripps;
 
 % load the predicted future emission data . Note it must be in ppm C as input of
 % Rafelski, but it is CO2 right now!  
@@ -46,10 +47,9 @@ opt_years = [ 1765 2016 ];
 % load fit of Rafelski model from the historical record of atmospheric CO2
 %load(strcat(path_data, 'Fit_RafelskiModelAtmosphericCO2', num2str(opt_years(1)),'_',...
 %      num2str(opt_years(2)),'.mat'))
-load( strcat( path_data, 'Fit_JoosModelAtmosphericCO2Final.mat' ),...
-                         'xoptAll', 'xoptNew', 'PastTotalCO2emission' )
+load( strcat( path_data, 'Fit_JoosModelOptim.mat' ) )
   
-xopt = xoptNew;
+xopt = xoptScripps1958;
 
 clear ffer fas dtdelpCO2a Aoc
   
@@ -96,7 +96,7 @@ for method = methodVec
         % predicts to far... (ask Ralph about it. Is it a bug?)
         tmp = tmp( ~isnan( tmp( :, 2 ) ), : );
         % predict atmospheric CO2 using rafelski model
-        tmp = JoosModelFix( tmp, xopt );
+        tmp = JoosModel( tmp, xopt );
         COa_bau( 1:size( tmp, 1), scn ) = tmp( :, 2 );
     end
     
@@ -120,7 +120,7 @@ for method = methodVec
                                      method );
 
         % predict atmospheric CO2 using rafelski model
-        tmp = JoosModelFix( tmp, xopt );
+        tmp = JoosModel( tmp, xopt );
         COa_alt( 1:size( tmp, 1 ), scn ) = tmp( :, 2 );
     end
     

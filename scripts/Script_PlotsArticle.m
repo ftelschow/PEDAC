@@ -394,7 +394,7 @@ print( strcat( outname, ".png" ), '-dpng' )
 for base = [ "2000", "2005", "2010" ]
     % load the results of detection
     load( strcat('workspaces/Detection_aCO2_IISA_base', base, '_',method,'.mat') )
-    quants = [ 0.25, 0.5, 0.75 ];
+    quants = [ 0.05, 0.5, 0.95 ];
     quants_detect_year = get_Quants( detect_year, quants );
 
     for l = 1:3

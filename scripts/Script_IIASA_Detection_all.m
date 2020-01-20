@@ -9,12 +9,11 @@
 function [] = Script_IIASA_Detection_all( NbauV, baseVec, methodVec, outnum )
 % baseVec  = [ 2000 2005 2010];
 % methodVec = ["direct" "interpolation"];
-clear all
-close all
+% clear all
+% close all
 
 %%%% load mat file containing the paths for output
-load( 'paths.mat' )
-cd(path)
+load( 'scripts/paths.mat' )
 clear path
 %%%% load color data base for plots
 load( strcat( path_work, 'colors.mat' ) )
@@ -63,7 +62,7 @@ for test_start = baseVec
 
         for scnBAU = NbauV(1) : NbauV(2)
             tic
-        for scnALT = 1 : Nalt
+        for scnALT = 1 : 4%Nalt
                 % Find cutting point
                 I_cut1 = times( COa_bau( :, 1 ) == detectStart( scnBAU ) );
 
@@ -141,7 +140,7 @@ for test_start = baseVec
         toc
         end
         
-        save( strcat('workspaces/Detection_aCO2_IISA_all_base',...
+        save( strcat(path_work, 'Detection_aCO2_IISA_all_base',...
                       num2str( test_start ), '_', method, '_', num2str(outnum),'.mat'),...
                 'detect_year', 'detectStart', 'category', 'sub_category',...
                 'namesAlt', 'namesBAU', 'start_year_alt', 'start_year_bau',...

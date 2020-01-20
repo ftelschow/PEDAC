@@ -12,8 +12,6 @@ close all
 
 %%%% load mat file containing the paths for output
 load( 'paths.mat' )
-cd(path)
-clear path
 
 %%%% standard color scheme for color blind and grey scale figures, cf.
 %%%% 'https://personal.sron.nl/~pault/'
@@ -44,5 +42,5 @@ Categories  = [ [ 102 204 238 ];...    % cyan
 
 colMat = Vibrant( [ 1 3 4 5 ], : );
 
-save( strcat( path_data, 'colors.mat' ), 'BrightCol', 'Vibrant', ...
+save( strcat( path_work, 'colors.mat' ), 'BrightCol', 'Vibrant', ...
                                      'colMat', 'Categories' )

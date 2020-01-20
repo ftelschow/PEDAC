@@ -15,6 +15,7 @@ if ~server
     path      = '/home/drtea/Research/Projects/CO2policy/PEDAC';
     path_pics = '/home/drtea/Research/Projects/CO2policy/pics/';
     path_data = '/home/drtea/Research/Projects/CO2policy/PEDAC/data/';
+    path_work = '/home/drtea/Research/Projects/CO2policy/PEDAC/workspaces/';
     cd(path)
     clear path
 else
@@ -25,4 +26,4 @@ else
 end
 
 save( strcat( path, '/scripts/paths.mat' ), 'path', 'path_pics', ...
-                                        'path_data' )
+                                        'path_data', 'path_work' )

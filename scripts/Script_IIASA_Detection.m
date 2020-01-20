@@ -55,7 +55,7 @@ for test_start = baseVec
     %%%%%%%% Fixed start year
     for method = methodVec
         % load the CO2 in atmosphere predicted using the Joos model
-        load( strcat( path_data, "AtmosphericCO2_IISA_", method, ".mat" ) )
+        load( strcat( path_data, "AtmosphericCO2_IISA_2_", method, ".mat" ) )
 
         % Year we start to search for an detection
         detectStart = repmat( test_start, [ 1 Nalt ] );
@@ -143,7 +143,7 @@ for test_start = baseVec
 
         end
 
-        save( strcat('workspaces/Detection_aCO2_IISA_base',...
+        save( strcat('workspaces/Detection_aCO2_IISA_2_base',...
                       num2str( test_start ), '_', method,'.mat'),...
                 'detect_year', 'detectStart', 'category', 'sub_category',...
                 'namesAlt', 'namesBAU', 'start_year_alt', 'start_year_bau',...
@@ -167,7 +167,7 @@ for method = methodVec
     for k = 1:length(baseVec)
         base = baseVec(k);
         % load the results of the 
-        load( strcat('workspaces/Detection_aCO2_IISA_base', base, '_',method,'.mat') )
+        load( strcat('workspaces/Detection_aCO2_IISA_2_base', base, '_',method,'.mat') )
         
         quants = [ 0.25, 0.5, 0.75 ];
         quants_detect_year = get_Quants( detect_year, quants );

@@ -12,11 +12,12 @@ clear all
 close all
 
 %%%% load mat file containing the paths for output
-load( strcat( path_data, 'paths.mat' ) )
+load( strcat( path_work, 'paths.mat' ) )
 cd(path)
 clear path
-%%%% load color data base for plots
-load( strcat( path_data, 'colors.mat' ) )
+%%%%% load color data base for plots
+load( strcat( path_work, 'colors.mat' ) )
+
 % choose main color scheme for this script 
 ColScheme  = Categories;
 

@@ -23,9 +23,12 @@ BrightCol  = [[68 119 170];...    % blue
               [187 187 187]]/255; % grey
 
 %%%% load mat file containing the paths for output
-load( strcat( path_data, 'paths.mat' ) )
+load( strcat( path_work, 'paths.mat' ) )
 cd(path)
 clear path
+
+% load color data base for plots
+load( strcat( path_work, 'colors.mat' ) )
 
 %%%% Constants
 % convert constant from gton to ppm

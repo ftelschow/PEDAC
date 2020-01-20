@@ -23,5 +23,5 @@ else
     path_data = '~/projects/PEDAC/data/';
 end
 
-save( strcat( path_data, 'paths.mat' ), 'path', 'path_pics', ...
+save( strcat( path, '/workspaces/', 'paths.mat' ), 'path', 'path_pics', ...
                                         'path_data' )

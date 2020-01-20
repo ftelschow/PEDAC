@@ -11,57 +11,38 @@
 clear all
 close all
 
-server = 1;
-% set correct working directory
-if ~server
-    path      = '/home/drtea/Research/Projects/CO2policy/PEDAC';
-    path_pics = '/home/drtea/Research/Projects/CO2policy/pics/';
-    path_data = '/home/drtea/Research/Projects/CO2policy/PEDAC/data/';
-    cd(path)
-    clear path
-else
-    path      = '~/projects/PEDAC';
-    path_pics = '~/projects/PEDAC/pics/';
-    path_data = '~/projects/PEDAC/data/';
-    cd(path)
-    clear path
-end
-
-% convert C to CO2
-C2CO2       = 44.01 / 12.011;
-
+%%%% load mat file containing the paths for output
+load( strcat( path_data, 'paths.mat' ) )
+cd(path)
+clear path
 %%%% load color data base for plots
 load( strcat( path_data, 'colors.mat' ) )
 % choose main color scheme for this script 
 ColScheme  = Categories;
 
-% methods to be used for emission concationation
-methodVec = [ "direct", "interpolation" ];
-
-% load the true past emission data. Note it must be in ppm C as input of
+%%%% load the true past emission data. Note it must be in ppm C as input of
 % Rafelski! 
 load( strcat( path_data, 'Emissions_PastMontly.mat' ) )
 PastTotalCO2emission = PastTotalCO2emissionScripps;
 
-% load the predicted future emission data . Note it must be in ppm C as input of
+%%%% load the predicted future emission data . Note it must be in ppm C as input of
 % Rafelski, but it is CO2 right now!  
 load( strcat( path_data, 'Emissions_IIASA_FutureMontly.mat' ) )
 
-
-%%%% Specify the optimisation periods of Rafelski model, which needs to be
-%%%% loaded
-% years used for LSE
-opt_years = [ 1765 2016 ];
-
-% load fit of Rafelski model from the historical record of atmospheric CO2
-%load(strcat(path_data, 'Fit_RafelskiModelAtmosphericCO2', num2str(opt_years(1)),'_',...
-%      num2str(opt_years(2)),'.mat'))
+%%%% load optimised Joos model parameters
 load( strcat( path_data, 'Fit_JoosModelOptim.mat' ) )
-  
+
+%%%% analysis choices
+% methods to be used for emission concationation
+methodVec = [ "direct", "interpolation" ];
 xopt = xoptScripps1958;
 
 clear ffer fas dtdelpCO2a Aoc
-  
+
+%%%% constants
+% convert C to CO2
+C2CO2       = 44.01 / 12.011;
+
 % output figure width and height
 WidthFig  = 550;
 HeightFig = 450;

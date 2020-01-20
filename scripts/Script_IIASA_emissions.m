@@ -22,11 +22,8 @@ BrightCol  = [[68 119 170];...    % blue
               [170 51 119];...    % purple
               [187 187 187]]/255; % grey
 
-%%%% data path and figure path
-% set correct working directory
-path      = '/home/drtea/Research/Projects/CO2policy/PEDAC';
-path_pics = '/home/drtea/Research/Projects/CO2policy/pics/';
-path_data = '/home/drtea/Research/Projects/CO2policy/PEDAC/data/';
+%%%% load mat file containing the paths for output
+load( strcat( path_data, 'paths.mat' ) )
 cd(path)
 clear path
 

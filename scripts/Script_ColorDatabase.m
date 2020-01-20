@@ -10,8 +10,11 @@
 clear all
 close all
 
-% set correct working directory
-path_data = '/home/drtea/Research/Projects/CO2policy/PEDAC/data/';
+%%%% load mat file containing the paths for output
+load( strcat( path_data, 'paths.mat' ) )
+cd(path)
+clear path
+
 %%%% standard color scheme for color blind and grey scale figures, cf.
 %%%% 'https://personal.sron.nl/~pault/'
 BrightCol  = [ [ 68 119 170 ];...    % blue

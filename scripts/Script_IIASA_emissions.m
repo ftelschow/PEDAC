@@ -23,7 +23,7 @@ BrightCol  = [[68 119 170];...    % blue
               [187 187 187]]/255; % grey
 
 %%%% load mat file containing the paths for output
-load( strcat( path_work, 'paths.mat' ) )
+load( 'paths.mat' )
 cd(path)
 clear path
 

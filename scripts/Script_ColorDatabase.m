@@ -11,7 +11,7 @@ clear all
 close all
 
 %%%% load mat file containing the paths for output
-load( strcat( path_work, 'paths.mat' ) )
+load( 'paths.mat' )
 cd(path)
 clear path
 

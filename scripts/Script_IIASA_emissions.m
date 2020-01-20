@@ -12,22 +12,11 @@
 clear all
 close all
 
-%%%% standard color scheme for color blind and grey scale figures, cf.
-%%%% 'https://personal.sron.nl/~pault/'
-BrightCol  = [[68 119 170];...    % blue
-              [102 204 238];...   % cyan
-              [34 136 51];...     % green
-              [204 187 68];...    % yellow
-              [238 102 119];...   % red
-              [170 51 119];...    % purple
-              [187 187 187]]/255; % grey
-
 %%%% load mat file containing the paths for output
 load( 'paths.mat' )
 cd(path)
 clear path
-
-% load color data base for plots
+%%%% load color data base for plots
 load( strcat( path_work, 'colors.mat' ) )
 
 %%%% Constants

@@ -21,8 +21,7 @@ else
     path      = '~/projects/PEDAC';
     path_pics = '~/projects/PEDAC/pics/';
     path_data = '~/projects/PEDAC/data/';
-
 end
 
 save( strcat( path_data, 'paths.mat' ), 'path', 'path_pics', ...
-                                        'path_pics_data', 'Categories' )
+                                        'path_data' )

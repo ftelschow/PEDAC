@@ -9,15 +9,13 @@
 clear all
 close all
 
-server = 1;
+server = 0;
 % set correct working directory
 if ~server
     path      = '/home/drtea/Research/Projects/CO2policy/PEDAC';
     path_pics = '/home/drtea/Research/Projects/CO2policy/pics/';
     path_data = '/home/drtea/Research/Projects/CO2policy/PEDAC/data/';
     path_work = '/home/drtea/Research/Projects/CO2policy/PEDAC/workspaces/';
-    cd(path)
-    clear path
 else
     path      = '~/projects/PEDAC';
     path_pics = '~/projects/PEDAC/pics/';

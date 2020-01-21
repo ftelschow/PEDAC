@@ -11,6 +11,7 @@ close all
 
 %%%% load mat file containing the paths for output
 load( 'scripts/paths.mat' )
+cd( path )
 clear path
 %%%% load color data base for plots
 load( strcat( path_work, 'colors.mat' ) )

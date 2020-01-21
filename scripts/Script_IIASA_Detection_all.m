@@ -7,8 +7,8 @@
 %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [] = Script_IIASA_Detection_all( NbauV, baseVec, outnum )
-% baseVec  = [ 2000 2005 2010];
-% methodVec = ["direct" "interpolation"];
+baseVec  = [ 2000 2010];
+methodVec = ["direct" "interpolation"];
 % clear all
 % close all
 
@@ -46,7 +46,7 @@ IMBALANCE = cumsum( generate_AR( Msim, T, rho, sigma ) );
 
 for test_start = baseVec
     %%%%%%%% Fixed start year
-    for method = "interpolation"
+    for method = methodVec
         % load the CO2 in atmosphere predicted using the Joos model
         load( strcat( path_data, "AtmosphericCO2_IISA_", method, ".mat" ) )
 
@@ -60,7 +60,9 @@ for test_start = baseVec
         % define the times
         times      = 1 : size( COa_bau, 1 );
 
-        for scnBAU = NbauV(1) : NbauV(2)
+        for scnBAUc = 1:length( NbauV(1):NbauV(2) )
+            vec    = NbauV(1):NbauV(2);
+            scnBAU = vec( scnBAUc );
             tic
         for scnALT = 1 : Nalt
                 % Find cutting point
@@ -84,8 +86,8 @@ for test_start = baseVec
                                               zeros( [ length(1 : mT) 2 ] ),...
                                               thresh );
 
-                detect_year( 1 : mT, scnALT, scnBAU ) = cdf_dyears;
-                thresholds_year( scnALT, scnBAU ) = thresh;
+                detect_year( 1 : mT, scnALT, scnBAUc ) = cdf_dyears;
+                thresholds_year( scnALT, scnBAUc ) = thresh;
 
 %                plot_Detection_cdf( [ false_detect; cdf_dyears ], test_start,...
 %                                    [0.05, 0.5, 0.95 ], q,...
@@ -94,7 +96,7 @@ for test_start = baseVec
 %                                        '_detection_aCO2_IISA_all_base', num2str(test_start), '_',...
 %                                        method, '.png' ) );
 
-                dyear = get_Quants( detect_year( 1 : mT, scnALT, scnBAU ), [ 0.05 0.5, 0.95 ] );
+                dyear = get_Quants( detect_year( 1 : mT, scnALT, scnBAUc ), [ 0.05 0.5, 0.95 ] );
 
  %               figure( 2 ), clf, hold on
  %               WidthFig  = 500 * 1.1;

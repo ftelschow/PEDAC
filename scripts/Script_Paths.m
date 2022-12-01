@@ -12,16 +12,14 @@ close all
 server = 0;
 % set correct working directory
 if ~server
-    path      = '/home/drtea/Research/Projects/CO2policy/PEDAC';
-    path_pics = '/home/drtea/Research/Projects/CO2policy/pics/';
-    path_data = '/home/drtea/Research/Projects/CO2policy/PEDAC/data/';
-    path_work = '/home/drtea/Research/Projects/CO2policy/PEDAC/workspaces/';
+    path_PEDAC = '~/Seafile/Code/PEDAC';
 else
-    path      = '~/projects/PEDAC';
-    path_pics = '~/projects/PEDAC/pics/';
-    path_data = '~/projects/PEDAC/data/';
-    path_work = '~/projects/PEDAC/workspaces/';
+    path_PEDAC = '~/projects/PEDAC';
 end
 
-save( strcat( path, '/scripts/paths.mat' ), 'path', 'path_pics', ...
+path_pics  = strcat(path_PEDAC, '/pics/');
+path_data  = strcat(path_PEDAC, '/data/');
+path_work  = strcat(path_PEDAC, '/workspaces/');
+
+save( strcat( path_PEDAC, '/scripts/paths.mat' ), 'path_PEDAC', 'path_pics', ...
                                         'path_data', 'path_work' )

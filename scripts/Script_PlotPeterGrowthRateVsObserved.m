@@ -21,8 +21,8 @@ BrightCol  = [[68 119 170];...    % blue
 %%%% data path and figure path
 % Change to the folder you want to use or if data is in the same directory
 % simply make it ''
-path_data = '/home/drtea/Research/Projects/CO2policy/PEDAC/data/';
-path_pics = '/home/drtea/Research/Projects/CO2policy/pics/';
+load( 'paths.mat' )
+cd(path_PEDAC)
 
 %%%% Constants
 % convert constant from gton to ppm

@@ -10,9 +10,9 @@ clear all
 close all
 
 %%%% load mat file containing the paths for output
-load( 'scripts/paths.mat' )
-cd( path )
-clear path
+load( 'paths.mat' )
+cd(path_PEDAC)
+
 %%%% load color data base for plots
 load( strcat( path_work, 'colors.mat' ) )
 % choose main color scheme for this script 

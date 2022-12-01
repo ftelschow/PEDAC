@@ -15,8 +15,7 @@ close all
 
 %%%% load mat file containing the paths for output
 load( 'paths.mat' )
-cd(path)
-clear path
+cd(path_PEDAC)
 
 % load color data base for plots
 load( strcat( path_work, 'colors.mat' ) )

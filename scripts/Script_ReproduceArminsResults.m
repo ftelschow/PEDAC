@@ -9,11 +9,8 @@ clear all
 close all
 
 % set correct working directory
-path      = '/home/drtea/Research/Projects/CO2policy/PEDAC';
-path_pics = '/home/drtea/Research/Projects/CO2policy/pics/';
-path_data = '/home/drtea/Research/Projects/CO2policy/PEDAC/data/';
-cd( path )
-clear path
+load( 'paths.mat' )
+cd(path_PEDAC)
 
 %%%% Constants
 % convert constant from gton to ppm: 1 ppm CO2 = 2.31 gton CO2

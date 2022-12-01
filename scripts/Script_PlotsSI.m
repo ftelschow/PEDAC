@@ -14,11 +14,12 @@ load( 'paths.mat' )
 cd(path_PEDAC)
 
 % convert C to CO2
-C2CO2       = 44.01 / 12.011;
+C2CO2       = 44.01/12.011;
 gtonC_2_ppm = 1 / 2.124;
 
 %%%% load color data base for plots
-load( strcat( path_work, 'colors.mat' ) )
+load(strcat(path_work,'colors.mat'))
+
 % choose main color scheme for this script 
 ColScheme  = Categories;
 
@@ -26,12 +27,12 @@ ColScheme  = Categories;
 backgroundCol = [255, 255, 255] / 255;
 gridCol = [ 112, 128, 144 ] / 255;
 bauCol = [ 128, 128, 128 ] / 255;
-histCol = BrightCol( 4, : );
+histCol = BrightCol(4,:);
 
 % defaultfigure scale
 scale = 1;
-figw = scale * 600;
-figh = scale * 500;
+figw = scale*600;
+figh = scale*500;
 
 % line widths
 lwdObs = 2;
@@ -46,41 +47,42 @@ xtickcell  = { '\textbf{1975}', '\textbf{2000}', '\textbf{2025}',...
 sf = 19;
 
 % legend in plots on or of?
-legend_on = 0;
+legend_on = 1;
 outside   = 0;
 
+methodV = ["interpolation", "direct"];
 method = "interpolation";
-
 %% Figure 1
+% Choose the concatination method
 % load past emissions
-load( strcat( path_data, 'Emissions_PastMontly.mat' ) )
+load( strcat(path_data, 'Emissions_PastMontly.mat') )
 % load future emissions
-load( strcat( path_data, 'Emissions_IIASA_FutureMontly.mat' ) )
+load( strcat(path_data, 'Emissions_IIASA_FutureMontly.mat') )
 
 PastTotalCO2emission = PastTotalCO2emissionScripps;
 
 % output file name
 if legend_on
-    outname = strcat( path_pics, 'article/fig1_emissions_legend_', method );
+    outname = strcat(path_pics,'article/fig1_emissions_legend');
 else
-    outname = strcat( path_pics, 'article/fig1_emissions_', method );
+    outname = strcat(path_pics,'article/fig1_emissions');
 end
 
 if legend_on
     if outside
         loc = "eastoutside";
-        lsf = sf - 4;
+        lsf = sf-4;
         scale = 1;
         % figure scale
-        figw = scale * 800;
-        figh = scale * 500;
+        figw = scale*800;
+        figh = scale*500;
     else
         loc = "northwest";
-        lsf = sf - 4;
+        lsf = sf-4;
         scale = 1;
         % figure scale
-        figw = scale * 600;
-        figh = scale * 500;
+        figw = scale*600;
+        figh = scale*500;
     end
 end
 
@@ -116,12 +118,12 @@ figure(1), clf, hold on,
     cutyear  = start_year_bau;
 
     for scn = scnVec( cutyear == 2005 )
-        if strcmp( method, "direct" )
-             cyear = cutyear( scn );
+        if cutyear( scn ) ~= 2010
+            cyear = [ cutyear( scn ) - 5 cutyear( scn ) ];
         else
-             cyear = [ cutyear( scn ) - 5 cutyear( scn ) ];
+            cyear = [ 2009 2010 ];
         end
-        
+
         data_tmp = concatinateTimeseries( PastTotalCO2emission,...
                                           data(:, [ 1, scn + 1 ] ),...
                                           cyear,...
@@ -149,11 +151,8 @@ figure(1), clf, hold on,
             colo = Categories(6,:);
         end
 
-        if strcmp( method, "direct" )
-             cyear = cutyear( scn );
-        else
-             cyear = [ cutyear( scn ) - 5 cutyear( scn ) ];
-        end
+        % years for the interpolation
+        cyear = [ cutyear( scn ) - 5 cutyear( scn ) ];
 
         % interpolate and concatinate future and past emissions
         data_tmp = concatinateTimeseries( PastTotalCO2emission,...
@@ -167,7 +166,7 @@ figure(1), clf, hold on,
 
     %%%% plot 1.5°C emission scenarios
     data    = data_alt;
-    scnVec  = 1:( size( data, 2 ) - 1 );
+    scnVec  = 1:(size(data,2)-1);
     cutyear = start_year_alt;
     scns    = strcmp(category, names_category(1) ) | ...
               strcmp(category, names_category(2) ) | ...
@@ -183,11 +182,8 @@ figure(1), clf, hold on,
             colo = Categories(3,:);
         end
         
-        if strcmp( method, "direct" )
-             cyear = cutyear( scn );
-        else
-             cyear = [ cutyear( scn ) - 5 cutyear( scn ) ];
-        end
+        % years for the interpolation
+        cyear = [ cutyear( scn ) - 5 cutyear( scn ) ];
 
         % interpolate and concatinate future and past emissions
         data_tmp = concatinateTimeseries( PastTotalCO2emission,...
@@ -262,7 +258,6 @@ print( strcat( outname, ".png" ), '-dpng' )
 
 
 %% %%%% Figure 2
-for method = [ "interpolation" "direct" ]
 %%%% load the correct atmospheric CO2 data
 % predicted future values
 load( strcat( path_data, 'AtmosphericCO2_IISA_', method, '.mat' ) );
@@ -271,11 +266,12 @@ load( strcat( path_data, 'AtmosphereCO2/dataObservedCO2.mat' ) );
 % remove unneccessary data
 clear dpCO2a_obs dtdelpCO2a_obs
 
+
 % output file name
 if legend_on
-    outname = strcat( path_pics, 'article/fig2_atmosphericCO2_legend_', method );
+    outname = strcat( path_pics, 'article/fig2_atmosphericCO2_legend' );
 else
-    outname = strcat( path_pics, 'article/fig2_atmosphericCO2_', method );
+    outname = strcat( path_pics, 'article/fig2_atmosphericCO2' );
 end
 
 PastTotalCO2emission = PastTotalCO2emissionScripps;
@@ -386,155 +382,22 @@ figure(2), clf, hold on
     fig_pos = fig.PaperPosition;
     fig.PaperSize = [fig_pos(3) fig_pos(4)];
 print( strcat( outname, ".png" ), '-dpng' )
-end
 
-%% Figure 3 histograms of detection time
-for method = [ "interpolation" "direct" ]
-    for base = [ "2000", "2005", "2010" ]
-        % load the results of detection
-        load( strcat(path_work,'Detection_aCO2_IISA_2_base', base, '_',method,'.mat') )
-        quants = [ 0.05, 0.5, 0.95 ];
-        quants_detect_year = get_Quants( detect_year, quants );
 
-        for l = 1:3
-        % output file name
-        outname = strcat( path_pics, 'article/fig3_detectionResults_base', num2str( base ),...
-                          '_quant', num2str( 100*quants( l ) ), '_', method );
-        scale = 1.2;
-        figw = scale*900;
-        figh = scale*400;
+%% Figure 3 Scenario
+% can be found in ...
 
-        % change for y-lim
-        if strcmp( base, "2000" )
-            ylims      = [ 13 47 ];
-            yvec       = [ 15 20 25 30 35 40 45 ];
-            ytickcell  = { '\textbf{15}', '\textbf{20}', '\textbf{25}',...
-                       '\textbf{30}', '\textbf{35}', '\textbf{40}', '\textbf{45}' };
-        elseif strcmp( base, "2000" )
-            ylims      = [ 5 42 ];
-            yvec       = [ 10 15 20 25 30 35 40 ];
-            ytickcell  = { '\textbf{10}', '\textbf{15}', '\textbf{20}', '\textbf{25}',...
-                       '\textbf{30}', '\textbf{35}', '\textbf{40}' };
-        else
-            ylims      = [ 0 37 ];
-            yvec       = [ 5 10 15 20 25 30 35 ];
-            ytickcell  = { '\textbf{5}', '\textbf{10}', '\textbf{15}', '\textbf{20}', '\textbf{25}',...
-                       '\textbf{30}', '\textbf{35}' };
-        end
-
-        BoxPos = 0.5*1:6;
-
-        %%%% simple histograms with mean
-            figure(3), clf, hold on
-            set( gcf, 'Position', [ 300 300 figw figh ] );
-            set( gcf, 'PaperPosition', [ 300 300 figw figh ] )
-
-            I1 = strcmp( names_category( 1 ), category );
-            I2 = strcmp( names_category( 2 ), category );
-            I3 = strcmp( names_category( 3 ), category );
-            I4 = strcmp( names_category( 4 ), category );
-            I5 = strcmp( names_category( 5 ), category );
-            I6 = strcmp( names_category( 6 ), category );
-
-            x = [ quants_detect_year( l, I6 ), quants_detect_year( l, I5 ),...
-                  quants_detect_year( l, I4 ), quants_detect_year( l, I3 ),...
-                  quants_detect_year( l, I2 ), quants_detect_year( l, I1 ) ];
-
-            g1 = repmat( { '\begin{tabular}{c} \textbf{1.5$^\circ$C} \\ \textbf{below}\end{tabular}' }, sum( I1 ), 1 );
-            g2 = repmat( { '\begin{tabular}{c} \textbf{1.5$^\circ$C} \\ \textbf{low ov.}\end{tabular}' }, sum( I2 ), 1 );
-            g3 = repmat( { '\begin{tabular}{c} \textbf{1.5$^\circ$C} \\ \textbf{high ov.}\end{tabular}' }, sum( I3 ), 1 );
-            g4 = repmat( { '\begin{tabular}{c} \textbf{2$^\circ$C} \\ \textbf{lower}\end{tabular}' }, sum( I4 ), 1 );
-            g5 = repmat( { '\begin{tabular}{c} \textbf{2$^\circ$C} \\ \textbf{higher}\end{tabular}' }, sum( I5 ), 1 );
-            g6 = repmat( { '\begin{tabular}{c} \textbf{2$^\circ$C} \\ \textbf{above}\end{tabular}' }, sum( I6 ), 1 );
-
-            g = [g6; g5; g4; g3; g2; g1];
-
-            set(groot,'defaultAxesTickLabelInterpreter','latex');  
-            h = boxplot( x, g, 'Colors', ColScheme( (end - 1):-1:1, : ),...
-                     'BoxStyle', 'filled',...
-                     'MedianStyle', 'line',...
-                     'PlotStyle', 'traditional',...%'compact',...
-                     'Widths', 0.1,...
-                     'Positions', BoxPos...
-                 );
-            set( h, { 'linew' }, { lwdObs } );
-
-            bp = gca;
-            bp.XAxis.TickLabelInterpreter = 'latex';
-            bp.YAxis.TickLabelInterpreter = 'latex';
-
-            a = get( get( gca, 'children' ), 'children' );   % Get the handles of all the objects
-            t = get( a, 'tag' );           % List the names of all the objects 
-            idx = strcmpi( t, 'box' );     % Find Box objects
-            boxes = a( idx );              % Get the children you need
-            set( boxes, 'linewidth', 20 ); % Set width
-
-            dx = 0.15;
-            med = median( quants_detect_year( l, I1 ) );
-            errorbar( BoxPos( 6 ), med, dx, 'horizontal',...
-                      'LineWidth', lwdObs, 'Color', Categories( 1, : ) )
-                med = median( quants_detect_year( l, I2 ) );
-            errorbar( BoxPos( 5 ), med, dx, 'horizontal',...
-                      'LineWidth', lwdObs, 'Color', Categories( 2, : ) )
-            med = median( quants_detect_year( l, I3 ) );
-            errorbar( BoxPos( 4 ), med, dx, 'horizontal',...
-                      'LineWidth', lwdObs, 'Color', Categories( 3, : ) )
-            med = median( quants_detect_year( l, I4 ) );
-            errorbar( BoxPos( 3 ), med, dx, 'horizontal',...
-                      'LineWidth', lwdObs, 'Color', Categories( 4, : ) )
-            med = median( quants_detect_year( l, I5 ) );
-            errorbar( BoxPos( 2 ), med, dx, 'horizontal',...
-                      'LineWidth', lwdObs, 'Color', Categories( 5, : ) )
-            med = median( quants_detect_year( l, I6 ) );
-            errorbar( BoxPos( 1 ), med, dx, 'horizontal',...
-                      'LineWidth', lwdObs, 'Color', Categories( 6, : ) )
-            % change y label and axis
-            ylim( ylims )
-            yticks( yvec )
-            yticklabels( ytickcell )
-
-            h = ylabel( '\textbf{ detection delay [years]}' );
-            set( h, 'Interpreter', 'latex' );
-
-            % change fontsize
-            set( gca, 'fontsize', sf );
-
-            % set background color
-            set( gca, 'color', backgroundCol )
-
-            % activate grid and modify properties
-            set( gca, 'XGrid', 'off' )
-            set( gca, 'YGrid', 'on' )
-            ax = gca;
-            ax.GridLineStyle = '-';
-            ax.GridColor = gridCol;
-            ax.GridAlpha = 0.7;
-            hold off        
-
-            % set background color
-            set( gcf, 'color', [ 1, 1, 1 ] )
-
-            fig = gcf;
-            set( gcf, 'papersize', [figw figh * 1.1 ] )
-            fig.InvertHardcopy = 'off';
-            fig.PaperPositionMode = 'auto';
-            fig_pos = fig.PaperPosition;
-            fig.PaperSize = [ fig_pos( 3 ) fig_pos( 4 ) ];
-        print( strcat( outname, ".png" ), '-dpng' )
-        end
-    end
-end
 %% Figure 4 histograms of detection time in one plot
-for method = [ "interpolation" "direct" ]
+for method = methodV
 for base = [ "2000", "2005", "2010" ]
     % load the results of detection
-    load( strcat('workspaces/Detection_aCO2_IISA_base', base, '_',method,'.mat') )
-    quants = [ 0.05, 0.5, 0.95 ];
+    load( strcat(path_work, 'Detection_aCO2_IISA_2_base', base, '_',method,'.mat') )
+    quants = [ 0.25, 0.5, 0.75 ];
     quants_detect_year = get_Quants( detect_year, quants );
 
     % output file name
-    outname = strcat( path_pics, 'article/fig4_detectionResults_base', ...
-                      num2str( base ), '_', method );
+    outname = strcat( path_pics, 'article/fig3_detectionResults_base', ...
+                      num2str( base ) );
     scale = 1.2;
     figw = scale*900;
     figh = scale*400;
@@ -694,4 +557,145 @@ for base = [ "2000", "2005", "2010" ]
         fig.PaperSize = [ fig_pos( 3 ) fig_pos( 4 ) ];
     print( strcat( outname, ".png" ), '-dpng' )
 end
+end
+
+%% SI 5: Plot the Histograms of all detection time pairings
+method = "interpolation"
+for base = "2010"
+    % load the results of detection
+    load( strcat(path_work, 'Detection_aCO2_IISA_all_base', base, '_',method,'.mat') )
+    quants = [ 0.25, 0.5, 0.75 ];
+    quants_detect_year = [];
+    ddd = size(detect_year, 3);
+    for kk = 1:ddd
+        quants_detect_year_tmp = get_Quants(detect_year(:,:,kk), quants);
+        quants_detect_year = [quants_detect_year, quants_detect_year_tmp];
+    end
+    
+    for l = 1:3
+    % output file name
+    outname = strcat( path_pics, 'article/fig5_detectionResults_all_base', num2str( base ),...
+                      '_quant', num2str( 100*quants( l ) ) );
+    scale = 1.2;
+    figw = scale*900;
+    figh = scale*400;
+
+    % change for y-lim
+    if strcmp( base, "2000" )
+        ylims      = [ 1 57 ];
+        yvec       = [ 15 20 25 30 35 40 45 ];
+        ytickcell  = { '\textbf{15}', '\textbf{20}', '\textbf{25}',...
+                   '\textbf{30}', '\textbf{35}', '\textbf{40}', '\textbf{45}' };
+    elseif strcmp( base, "2005" )
+        ylims      = [ 5 42 ];
+        yvec       = [ 10 15 20 25 30 35 40 ];
+        ytickcell  = { '\textbf{10}', '\textbf{15}', '\textbf{20}', '\textbf{25}',...
+                   '\textbf{30}', '\textbf{35}', '\textbf{40}' };
+    else
+        ylims      = [ 0 37 ];
+        yvec       = [ 5 10 15 20 25 30 35 ];
+        ytickcell  = { '\textbf{5}', '\textbf{10}', '\textbf{15}', '\textbf{20}', '\textbf{25}',...
+                   '\textbf{30}', '\textbf{35}' };
+    end
+
+    BoxPos = 0.5*1:6;
+
+    %%%% simple histograms with mean
+        figure(3), clf, hold on
+        set( gcf, 'Position', [ 300 300 figw figh ] );
+        set( gcf, 'PaperPosition', [ 300 300 figw figh ] )
+
+        I1 = repmat(strcmp( names_category( 1 ), category ), [1 ddd]);
+        I2 = repmat(strcmp( names_category( 2 ), category ), [1 ddd]);
+        I3 = repmat(strcmp( names_category( 3 ), category ), [1 ddd]);
+        I4 = repmat(strcmp( names_category( 4 ), category ), [1 ddd]);
+        I5 = repmat(strcmp( names_category( 5 ), category ), [1 ddd]);
+        I6 = repmat(strcmp( names_category( 6 ), category ), [1 ddd]);
+
+        x = [ quants_detect_year( l, I6 ), quants_detect_year( l, I5 ),...
+              quants_detect_year( l, I4 ), quants_detect_year( l, I3 ),...
+              quants_detect_year( l, I2 ), quants_detect_year( l, I1 ) ];
+
+        g1 = repmat( { '\begin{tabular}{c} \textbf{1.5$^\circ$C} \\ \textbf{below}\end{tabular}' }, sum( I1 ), 1 );
+        g2 = repmat( { '\begin{tabular}{c} \textbf{1.5$^\circ$C} \\ \textbf{low ov.}\end{tabular}' }, sum( I2 ), 1 );
+        g3 = repmat( { '\begin{tabular}{c} \textbf{1.5$^\circ$C} \\ \textbf{high ov.}\end{tabular}' }, sum( I3 ), 1 );
+        g4 = repmat( { '\begin{tabular}{c} \textbf{2$^\circ$C} \\ \textbf{lower}\end{tabular}' }, sum( I4 ), 1 );
+        g5 = repmat( { '\begin{tabular}{c} \textbf{2$^\circ$C} \\ \textbf{higher}\end{tabular}' }, sum( I5 ), 1 );
+        g6 = repmat( { '\begin{tabular}{c} \textbf{2$^\circ$C} \\ \textbf{above}\end{tabular}' }, sum( I6 ), 1 );
+
+        g = [g6; g5; g4; g3; g2; g1];
+
+        set(groot,'defaultAxesTickLabelInterpreter','latex');  
+        h = boxplot( x, g, 'Colors', ColScheme( (end - 1):-1:1, : ),...
+                 'BoxStyle', 'filled',...
+                 'MedianStyle', 'line',...
+                 'PlotStyle', 'traditional',...%'compact',...
+                 'Widths', 0.1,...
+                 'Positions', BoxPos...
+             );
+        set( h, { 'linew' }, { lwdObs } );
+
+        bp = gca;
+        bp.XAxis.TickLabelInterpreter = 'latex';
+        bp.YAxis.TickLabelInterpreter = 'latex';
+
+        a = get( get( gca, 'children' ), 'children' );   % Get the handles of all the objects
+        t = get( a, 'tag' );           % List the names of all the objects 
+        idx = strcmpi( t, 'box' );     % Find Box objects
+        boxes = a( idx );              % Get the children you need
+        set( boxes, 'linewidth', 20 ); % Set width
+
+        dx = 0.15;
+       med = median( quants_detect_year( l, I1 ) );
+        errorbar( BoxPos( 6 ), med, dx, 'horizontal',...
+                  'LineWidth', lwdObs, 'Color', Categories( 1, : ) )
+            med = median( quants_detect_year( l, I2 ) );
+        errorbar( BoxPos( 5 ), med, dx, 'horizontal',...
+                  'LineWidth', lwdObs, 'Color', Categories( 2, : ) )
+        med = median( quants_detect_year( l, I3 ) );
+        errorbar( BoxPos( 4 ), med, dx, 'horizontal',...
+                  'LineWidth', lwdObs, 'Color', Categories( 3, : ) )
+        med = median( quants_detect_year( l, I4 ) );
+        errorbar( BoxPos( 3 ), med, dx, 'horizontal',...
+                  'LineWidth', lwdObs, 'Color', Categories( 4, : ) )
+        med = median( quants_detect_year( l, I5 ) );
+        errorbar( BoxPos( 2 ), med, dx, 'horizontal',...
+                  'LineWidth', lwdObs, 'Color', Categories( 5, : ) )
+        med = median( quants_detect_year( l, I6 ) );
+        errorbar( BoxPos( 1 ), med, dx, 'horizontal',...
+                  'LineWidth', lwdObs, 'Color', Categories( 6, : ) )
+        % change y label and axis
+        ylim( ylims )
+        yticks( yvec )
+        yticklabels( ytickcell )
+
+        h = ylabel( '\textbf{ detection delay [years]}' );
+        set( h, 'Interpreter', 'latex' );
+
+        % change fontsize
+        set( gca, 'fontsize', sf );
+
+        % set background color
+        set( gca, 'color', backgroundCol )
+
+        % activate grid and modify properties
+        set( gca, 'XGrid', 'off' )
+        set( gca, 'YGrid', 'on' )
+        ax = gca;
+        ax.GridLineStyle = '-';
+        ax.GridColor = gridCol;
+        ax.GridAlpha = 0.7;
+        hold off        
+
+        % set background color
+        set( gcf, 'color', [ 1, 1, 1 ] )
+
+        fig = gcf;
+        set( gcf, 'papersize', [figw figh * 1.1 ] )
+        fig.InvertHardcopy = 'off';
+        fig.PaperPositionMode = 'auto';
+        fig_pos = fig.PaperPosition;
+        fig.PaperSize = [ fig_pos( 3 ) fig_pos( 4 ) ];
+    print( strcat( outname, ".png" ), '-dpng' )
+    end
 end

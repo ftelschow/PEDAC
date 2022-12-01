@@ -41,19 +41,19 @@ CAT = [1990:2015;[35.99 36.35 35.53 35.74 35.86 36.67 37.32 37.69 38.04...
 %%%% Data loading and description of data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % load global carbonproject data, data in GtC/year
-GCP = readtable(strcat(path_data,'GCP_2018.txt'));
+GCP = readtable(strcat(path_data,'/Misc/GCP_2018.txt'));
 GCP = GCP.Variables;
 % transform into GtCO2/year
 GCP(:,2:end) = GCP(:,2:end) * C2CO2;
 
 % load data from Peter's paper as extracted by Armin. According to the
 % article the units are GtCO2/year
-T = readtable(strcat(path_data,'Peters2017_Fig2_past.txt'));
+T = readtable(strcat(path_data,'/Misc/Peters2017_Fig2_past.txt'));
 PetersPast = T.Variables;
 
 % load data from https://www.esrl.noaa.gov/gmd/ccgg/trends/gl_gr.html,
 % giving the Annual Mean Global Carbon Dioxide Growth Rates in ppm per year
-T     = readtable(strcat(path_data,'Global_2018_grCo2.txt'));
+T     = readtable(strcat(path_data,'/Misc/Global_2018_grCo2.txt'));
 NOAA  = T.Variables;
 % convert NOAA data into GtCO2/year
 NOAA(:,2:3) = NOAA(:,2:3) / gtonC_2_ppm*C2CO2;

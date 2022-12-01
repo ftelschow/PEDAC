@@ -7,7 +7,7 @@
 %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [] = Script_IIASA_Detection_all( NbauV, baseVec, outnum )
-baseVec  = [ 2000 2010];
+
 methodVec = ["direct" "interpolation"];
 % clear all
 % close all
@@ -49,7 +49,7 @@ for test_start = baseVec
     %%%%%%%% Fixed start year
     for method = methodVec
         % load the CO2 in atmosphere predicted using the Joos model
-        load( strcat( path_data, "AtmosphericCO2_IISA_", method, ".mat" ) )
+        load(strcat(path_data, "AtmosphericCO2_IISA_", method, ".mat"))
 
         % Year we start to search for an detection
         detectStart = repmat( test_start, [ 1 Nalt ] );
@@ -62,8 +62,9 @@ for test_start = baseVec
         times      = 1 : size( COa_bau, 1 );
 
         for scnBAUc = 1:length( NbauV(1):NbauV(2) )
+            scnBAUc
             vec    = NbauV(1):NbauV(2);
-            scnBAU = vec( scnBAUc );
+            scnBAU = vec(scnBAUc);
             tic
         for scnALT = 1 : Nalt
                 % Find cutting point
